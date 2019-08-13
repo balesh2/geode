@@ -455,7 +455,7 @@ jobs:
           - name: geode-benchmarks
           - name: concourse-metadata-resource
           - name: results
-- task: run_benchmarks_with_ssl
+  - task: run_benchmarks_with_ssl
     {{- alpine_tools_config()|indent(4) }}
       params:
         AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
