@@ -446,6 +446,7 @@ jobs:
             ARTIFACT_BUCKET: ((artifact-bucket))
             BASELINE_BRANCH: {{benchmarks.baseline_branch}}
             BASELINE_VERSION: {{benchmarks.baseline_version}}
+            WITH_SSL:
           run:
             path: geode-ci/ci/scripts/cleanup_benchmarks.sh
           inputs:
@@ -478,7 +479,7 @@ jobs:
     timeout: 4h
     ensure:
       do:
-      - task: cleanup_benchmarks
+      - task: cleanup_benchmarks_wiht_ssl
         {{- alpine_tools_config()|indent(8) }}
           params:
             AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
@@ -488,6 +489,7 @@ jobs:
             ARTIFACT_BUCKET: ((artifact-bucket))
             BASELINE_BRANCH: {{benchmarks.baseline_branch}}
             BASELINE_VERSION: {{benchmarks.baseline_version}}
+            WITH_SSL: -PwithSsl
           run:
             path: geode-ci/ci/scripts/cleanup_benchmarks.sh
           inputs:
