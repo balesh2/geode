@@ -414,7 +414,7 @@ jobs:
     - put: concourse-metadata-resource
   - aggregate:
     - task: run_benchmarks
-      {{- alpine_tools_config()|indent(4) }}
+      {{- alpine_tools_config()|indent(6) }}
         params:
           AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
           AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
@@ -438,7 +438,7 @@ jobs:
       ensure:
         do:
         - task: cleanup_benchmarks
-          {{- alpine_tools_config()|indent(8) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
               AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
@@ -457,7 +457,7 @@ jobs:
             - name: concourse-metadata-resource
             - name: results
     - task: run_benchmarks_with_ssl
-      {{- alpine_tools_config()|indent(4) }}
+      {{- alpine_tools_config()|indent(6) }}
         params:
           AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
           AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
@@ -481,7 +481,7 @@ jobs:
       ensure:
         do:
         - task: cleanup_benchmarks_wiht_ssl
-          {{- alpine_tools_config()|indent(8) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
               AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
