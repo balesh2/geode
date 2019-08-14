@@ -32,11 +32,11 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 source concourse-metadata-resource/concourse_metadata
 
 if [ -z "${WITH_SSL}" ]; then
-  SSL_TAG_POSTFIX="-wSSL"
-  SSL_TEST_OPTION="--tests=*tBenchmark"
-else
   SSL_TAG_POSTFIX=""
   SSL_TEST_OPTION=""
+else
+  SSL_TAG_POSTFIX="-wSSL"
+  SSL_TEST_OPTION="--tests=*tBenchmark"
 fi
 
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${SSL_TAG_POSTFIX}"
