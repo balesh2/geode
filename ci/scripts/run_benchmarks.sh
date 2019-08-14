@@ -33,8 +33,10 @@ source concourse-metadata-resource/concourse_metadata
 
 if [ -z "${WITH_SSL}" ]; then
   SSL_TAG_POSTFIX="-wSSL"
+  SSL_TEST_OPTION="--tests=*tBenchmark"
 else
   SSL_TAG_POSTFIX=""
+  SSL_TEST_OPTION=""
 fi
 
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${SSL_TAG_POSTFIX}"
@@ -51,9 +53,9 @@ pushd geode-benchmarks/infrastructure/scripts/aws/
 ./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} --ci
 
 if [ -z "${BASELINE_VERSION}" ]; then
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${WITH_SSL}
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${WITH_SSL} ${SSL_TEST_OPTION}
 else
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_version':'${BASELINE_VERSION}','geode_branch':'${GEODE_SHA}'" --ci -- ${WITH_SSL}
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_version':'${BASELINE_VERSION}','geode_branch':'${GEODE_SHA}'" --ci -- ${WITH_SSL} ${SSL_TEST_OPTION}
 fi
 
 
