@@ -16,7 +16,7 @@
 #
 
 benchmarks:
-  baseline_branch: develop/highwater
+  baseline_branch: 42a0d0d54d5e307837d0b12d87bb288ac7c2493e
   baseline_version: ''
   branch: develop
 
