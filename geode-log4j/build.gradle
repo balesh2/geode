@@ -85,7 +85,7 @@ jmh {
   duplicateClassesStrategy = 'warn'
   include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
   profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
-  threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
+  threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') as int : null
 }
 
 jmhJar {
