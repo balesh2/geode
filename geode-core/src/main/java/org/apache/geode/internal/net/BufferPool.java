@@ -56,18 +56,15 @@ public class BufferPool {
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  public ByteBuffer acquireDirectSenderBuffer(int size) {
-    return acquireDirectBuffer(size, true);
+  public ByteBuffer acquireSenderBuffer(int size) {
+    return acquireBuffer(size, true);
   }
 
-  public ByteBuffer acquireDirectReceiveBuffer(int size) {
-    return acquireDirectBuffer(size, false);
+  public ByteBuffer acquireReceiveBuffer(int size) {
+    return acquireBuffer(size, false);
   }
 
-  /**
-   * try to acquire direct buffer, if enabled by configuration
-   */
-  private ByteBuffer acquireDirectBuffer(int size, boolean send) {
+  private ByteBuffer acquireBuffer(int size, boolean send) {
     ByteBuffer result;
     if (useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
@@ -117,18 +114,6 @@ public class BufferPool {
     return result;
   }
 
-  public ByteBuffer acquireNonDirectSenderBuffer(int size) {
-    ByteBuffer result = ByteBuffer.allocate(size);
-    stats.incSenderBufferSize(size, false);
-    return result;
-  }
-
-  public ByteBuffer acquireNonDirectReceiveBuffer(int size) {
-    ByteBuffer result = ByteBuffer.allocate(size);
-    stats.incReceiverBufferSize(size, false);
-    return result;
-  }
-
   public void releaseSenderBuffer(ByteBuffer bb) {
     releaseBuffer(bb, true);
   }
@@ -149,12 +134,7 @@ public class BufferPool {
       }
       return existing;
     }
-    ByteBuffer newBuffer;
-    if (existing.isDirect()) {
-      newBuffer = acquireDirectBuffer(type, desiredCapacity);
-    } else {
-      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
-    }
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
     newBuffer.clear();
     newBuffer.put(existing);
     newBuffer.flip();
@@ -170,12 +150,7 @@ public class BufferPool {
     if (existing.capacity() >= desiredCapacity) {
       return existing;
     }
-    ByteBuffer newBuffer;
-    if (existing.isDirect()) {
-      newBuffer = acquireDirectBuffer(type, desiredCapacity);
-    } else {
-      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
-    }
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
     newBuffer.clear();
     existing.flip();
     newBuffer.put(existing);
@@ -183,26 +158,14 @@ public class BufferPool {
     return newBuffer;
   }
 
-  ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
+  ByteBuffer acquireBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
       case TRACKED_SENDER:
-        return acquireDirectSenderBuffer(capacity);
+        return acquireSenderBuffer(capacity);
       case TRACKED_RECEIVER:
-        return acquireDirectReceiveBuffer(capacity);
-    }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
-  }
-
-  ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
-    switch (type) {
-      case UNTRACKED:
-        return ByteBuffer.allocate(capacity);
-      case TRACKED_SENDER:
-        return acquireNonDirectSenderBuffer(capacity);
-      case TRACKED_RECEIVER:
-        return acquireNonDirectReceiveBuffer(capacity);
+        return acquireReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
@@ -226,7 +189,7 @@ public class BufferPool {
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(ByteBuffer bb, boolean send) {
-    if (bb.isDirect()) {
+    if (useDirectBuffers) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
