@@ -75,10 +75,6 @@ do
     METADATA_BASELINE="'benchmark_version':'${BASELINE_VERSION}'"
   fi
 
-  if [[ ${FLAGS} == *"-PtestJVM=/usr/lib/jvm/java-11-openjdk-amd64/"* ]]; then
-    ./run_on_cluster -t ${CLUSTER_TAG} -- sudo apt-get -y install openjdk-11-jdk
-  fi
-
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- pkill -9 java
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- rm /home/geode/locator10334view.dat;
   ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
