@@ -15,125 +15,191 @@
 
 package org.apache.geode.redis.session;
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.util.Properties;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.session.SessionRepository;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import org.apache.geode.internal.tcp.ConnectionException;
-import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.categories.RedisTest;
-import org.apache.geode.test.junit.rules.ConcurrencyRule;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({RedisTest.class})
-public class RedisServerHAResiliencyDUnitTest extends SessionDUnitTest {
-  private static final String LOCAL_HOST = "127.0.0.1";
+public class RedisServerHAResiliencyDUnitTest {
+  private static final Logger log = LogService.getLogger();
+
+  private static String LOCALHOST = "localhost";
+  public static final String KEY = "redis_key";
+  public static final String VALUE = "a_value";
+
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
+
+  private static final int NUM_REDIS_SERVERS = 3;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
-  private static final int numServers = 4;
-  private static final int numClients = 8;
-  private static final int numStops = 5;
+  private static final int RETRIEVE_REDIS_VALUE_TIMEOUT = 15;
 
-  private static int serverPortCounter = 0;
+  private Jedis[] jedisConnections;
+  Map<String, Integer> vmMap;
 
-  MemberVM[] servers = new MemberVM[numServers];
-  Jedis[] clients = new Jedis[numClients];
-
-  protected AnnotationConfigApplicationContext ctx;
-  protected SessionRepository sessionRepository;
-
-  private Properties properties = new Properties();
-
-  @Rule
-  public ExecutorServiceRule executor = new ExecutorServiceRule();
-
-  @Rule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
-
-  @Rule
-  ConcurrencyRule concurrencyRule = new ConcurrencyRule();
+  @ClassRule
+  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(4);
 
   @BeforeClass
-  public static void setupClass() {
-    SessionDUnitTest.setup();
-    setupSpringApps(DEFAULT_SESSION_TIMEOUT);
+  public static void setup() {
+    locator = cluster.startLocatorVM(3);
+
+    server1 = cluster.startRedisVM(0, locator.getPort());
+    server2 = cluster.startRedisVM(1, locator.getPort());
+    server3 = cluster.startRedisVM(2, locator.getPort());
+  }
+
+  @Before
+  public void setupTest() {
+    jedisConnections = new Jedis[NUM_REDIS_SERVERS];
+    for (int i = 0; i< NUM_REDIS_SERVERS; i++) {
+      jedisConnections[i] = new Jedis(LOCALHOST, cluster.getRedisPort(i), JEDIS_TIMEOUT);
+    }
+    jedisConnections[0].flushAll();
+    // set a key-value entry
+    jedisConnections[0].set(KEY, VALUE);
+
+    // pull from another server to confirm it got set
+    String retVal = jedisConnections[2].get(KEY);
+
+    assertThat(retVal).isEqualTo(VALUE);
+
+    vmMap = new HashMap<>();
+    vmMap.put(server1.getName(), 1);
+    vmMap.put(server2.getName(), 2);
+    vmMap.put(server3.getName(), 3);
   }
 
   @Test
-  public void idk_doSomething() {
-    properties.setProperty(REDIS_BIND_ADDRESS, "localhost");
-    properties.setProperty(REDIS_PORT, "0");
-    properties.setProperty(REDIS_ENABLED, "true");
-    properties.setProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true");
+  public void killingPrimaryServer_dataStillAccessible() {
+    // find the primary and secondary for that key
+    String memberForPrimary = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
 
-    MemberVM locator0 = cluster.startLocatorVM(0, properties, 0);
+      DistributedMember distributedMember = PartitionRegionHelper
+          .getPrimaryMemberForKey(region, new ByteArrayWrapper(KEY.getBytes()));
 
-    for(int i=0; i<numServers; i++) {
-      servers[i] = cluster.startServerVM(i, properties, locator0.getPort());
-    }
+      AtomicReference<String> currentPrimary =
+          new AtomicReference<>(distributedMember
+              .getName());
 
-    for(int i=0; i<numClients; i++) {
-      clients[i] = getANewJedis();
-    }
+      return currentPrimary.get();
+    });
 
-    AtomicBoolean done = new AtomicBoolean(false);
-    int clientIndex = 0;
-
-    // kick off some client threads(?) doing ops on servers and checking results
-    while(!done.get()) {
-      try {
-        clients[clientIndex].set("key", "value");
-    //   do Jedis operation
-      } catch (JedisConnectionException e) {
-        //   loop to get a new Jedis (maybe bail after numServers tries)
-        clients[clientIndex] = getANewJedis();
-        // confirm we can do a Jedis op...
-        // if not, try to get a new Jedis again
-        continue;
-      }
-     }
-    // confirm data is there (maybe check all keys?)
-    // }
+    log.info("primary server for key is: " + memberForPrimary);
 
 
-    // start killing servers at some interval (20 seconds to start)
+    int serverIndex = vmMap.get(memberForPrimary);
+    cluster.crashVM(serverIndex);
+    cluster.startRedisVM(serverIndex, locator.getPort());
 
-
-    for(int i=0; i<numStops; i++) {
-      // choose a random server to kill
-      int random = new Random().nextInt(numServers);
-      // kill randomly selected server
-      cluster.stop(random);
-      // wait until the client has fully restarted
-      for(int j=0; j<numServers; j++) {
-        clients[i].waitTillClientsAreReadyOnServers(
-            servers[j].getName(), servers[j].getPort(), numClients);
-      }
-    }
+    final int jedisIndex = (serverIndex+1)%2; // connect to non-crashed server
+    GeodeAwaitility.await().ignoreExceptions().atMost(RETRIEVE_REDIS_VALUE_TIMEOUT, TimeUnit.SECONDS)
+        .untilAsserted(() ->assertThat(jedisConnections[jedisIndex].get(KEY)).isEqualTo(VALUE));
   }
 
-  private Jedis getANewJedis() {
-    return new Jedis(LOCAL_HOST, getNextServerPort(), JEDIS_TIMEOUT);
+  @Test
+  public void killingSecondaryServer_dataStillAccessible() {
+    String secondaryMember = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
+
+      Set<DistributedMember> distributedMemberSet = PartitionRegionHelper
+          .getRedundantMembersForKey(region, new ByteArrayWrapper(KEY.getBytes()));
+      DistributedMember[] distributedMembers =
+          distributedMemberSet.toArray(new DistributedMember[distributedMemberSet.size()]);
+      return distributedMembers[0].getName();
+    });
+
+    int serverIndex = vmMap.get(secondaryMember);
+    cluster.crashVM(serverIndex);
+    cluster.startRedisVM(serverIndex, locator.getPort());
+
+    final int jedisIndex = (serverIndex+1)%2; // connect to non-crashed server
+    GeodeAwaitility.await().ignoreExceptions().atMost(RETRIEVE_REDIS_VALUE_TIMEOUT, TimeUnit.SECONDS)
+        .untilAsserted(() ->assertThat(jedisConnections[jedisIndex].get(KEY)).isEqualTo(VALUE));
   }
 
-  private int getNextServerPort() {
-    return servers[(serverPortCounter++)%numServers].getPort();
+  @Test
+  public void killingPrimaryThenSecondary_withLongerInterval_maintainsRedundancy() {
+    String secondaryMember = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
+
+      Set<DistributedMember> distributedMemberSet = PartitionRegionHelper
+          .getRedundantMembersForKey(region, new ByteArrayWrapper(KEY.getBytes()));
+      DistributedMember[] distributedMembers =
+          distributedMemberSet.toArray(new DistributedMember[distributedMemberSet.size()]);
+      return distributedMembers[0].getName();
+    });
+
+    String primaryMember = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
+
+      DistributedMember secondaryDistributedMember = PartitionRegionHelper
+          .getPrimaryMemberForKey(region, new ByteArrayWrapper(KEY.getBytes()));
+
+      AtomicReference<String> currentPrimary =
+          new AtomicReference<>(secondaryDistributedMember
+              .getName());
+
+      return currentPrimary.get();
+    });
+
+    assertThat(primaryMember).isNotEqualTo(secondaryMember);
+
+    // kill & restart primary
+    int primaryServerIndex = vmMap.get(primaryMember);
+    cluster.crashVM(primaryServerIndex);
+    cluster.startRedisVM(primaryServerIndex, locator.getPort());
+    cluster.getMember(primaryServerIndex).waitTilFullyReconnected();
+
+    // kill & restart secondary
+    int secondaryServerIndex = vmMap.get(secondaryMember);
+    cluster.crashVM(secondaryServerIndex);
+    cluster.startRedisVM(secondaryServerIndex, locator.getPort());
+    cluster.getMember(secondaryServerIndex).waitTilFullyReconnected();
+
+    //index of new server to query = sum of all indices - primary -secondary
+    // index = 6 - 2-3
+    // can still get data
+    final int jedisIndex = 3 - (primaryServerIndex + secondaryServerIndex);
+
+    GeodeAwaitility.await().ignoreExceptions().atMost(RETRIEVE_REDIS_VALUE_TIMEOUT, TimeUnit.SECONDS)
+        .untilAsserted(() ->assertThat(jedisConnections[jedisIndex].get(KEY)).isEqualTo(VALUE));
   }
+
+  @Test
+  public void killingPrimaryThenSecondary_withShorterInterval_messesThingsUp() {
+  }
+
 }
