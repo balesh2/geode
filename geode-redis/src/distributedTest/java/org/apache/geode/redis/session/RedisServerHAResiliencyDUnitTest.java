@@ -92,9 +92,9 @@ public class RedisServerHAResiliencyDUnitTest {
     assertThat(retVal).isEqualTo(VALUE);
 
     vmMap = new HashMap<>();
-    vmMap.put(server1.getName(), 1);
-    vmMap.put(server2.getName(), 2);
-    vmMap.put(server3.getName(), 3);
+    vmMap.put(server1.getName(), 0);
+    vmMap.put(server2.getName(), 1);
+    vmMap.put(server3.getName(), 2);
   }
 
   @Test
@@ -176,30 +176,79 @@ public class RedisServerHAResiliencyDUnitTest {
     });
 
     assertThat(primaryMember).isNotEqualTo(secondaryMember);
+    final int primaryServerIndex = vmMap.get(primaryMember);
+    final int secondaryServerIndex = vmMap.get(secondaryMember);
+    final int jedisIndex = NUM_REDIS_SERVERS - (primaryServerIndex + secondaryServerIndex);
+    assertThat(jedisIndex).isNotEqualTo(primaryServerIndex);
+    assertThat(jedisIndex).isNotEqualTo(secondaryServerIndex);
 
     // kill & restart primary
-    int primaryServerIndex = vmMap.get(primaryMember);
     cluster.crashVM(primaryServerIndex);
     cluster.startRedisVM(primaryServerIndex, locator.getPort());
     cluster.getMember(primaryServerIndex).waitTilFullyReconnected();
 
     // kill & restart secondary
-    int secondaryServerIndex = vmMap.get(secondaryMember);
     cluster.crashVM(secondaryServerIndex);
     cluster.startRedisVM(secondaryServerIndex, locator.getPort());
     cluster.getMember(secondaryServerIndex).waitTilFullyReconnected();
 
     //index of new server to query = sum of all indices - primary -secondary
-    // index = 6 - 2-3
     // can still get data
-    final int jedisIndex = 3 - (primaryServerIndex + secondaryServerIndex);
-
     GeodeAwaitility.await().ignoreExceptions().atMost(RETRIEVE_REDIS_VALUE_TIMEOUT, TimeUnit.SECONDS)
         .untilAsserted(() ->assertThat(jedisConnections[jedisIndex].get(KEY)).isEqualTo(VALUE));
   }
 
   @Test
   public void killingPrimaryThenSecondary_withShorterInterval_messesThingsUp() {
+    String secondaryMember = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
+
+      Set<DistributedMember> distributedMemberSet = PartitionRegionHelper
+          .getRedundantMembersForKey(region, new ByteArrayWrapper(KEY.getBytes()));
+      if (distributedMemberSet.size() > 1) {
+        throw new RuntimeException("Hey, there should only be one redundant member!");
+      }
+      DistributedMember[] distributedMembers =
+          distributedMemberSet.toArray(new DistributedMember[distributedMemberSet.size()]);
+      return distributedMembers[0].getName();
+    });
+
+    String primaryMember = server1.invoke(() -> {
+      InternalCache cache = RedisClusterStartupRule.getCache();
+      Region<ByteArrayWrapper, ByteArrayWrapper> region = cache.getRegion("/__REDIS_DATA");
+
+      DistributedMember secondaryDistributedMember = PartitionRegionHelper
+          .getPrimaryMemberForKey(region, new ByteArrayWrapper(KEY.getBytes()));
+
+      AtomicReference<String> currentPrimary =
+          new AtomicReference<>(secondaryDistributedMember
+              .getName());
+
+      return currentPrimary.get();
+    });
+
+    assertThat(primaryMember).isNotEqualTo(secondaryMember);
+    final int primaryServerIndex = vmMap.get(primaryMember);
+    final int secondaryServerIndex = vmMap.get(secondaryMember);
+    final int jedisIndex = NUM_REDIS_SERVERS - (primaryServerIndex + secondaryServerIndex);
+    assertThat(jedisIndex).isNotEqualTo(primaryServerIndex);
+    assertThat(jedisIndex).isNotEqualTo(secondaryServerIndex);
+
+    // kill & restart primary
+    cluster.crashVM(primaryServerIndex);
+    cluster.startRedisVM(primaryServerIndex, locator.getPort());
+//    cluster.getMember(primaryServerIndex).waitTilFullyReconnected();
+
+    // kill & restart secondary
+    cluster.crashVM(secondaryServerIndex);
+    cluster.startRedisVM(secondaryServerIndex, locator.getPort());
+//    cluster.getMember(secondaryServerIndex).waitTilFullyReconnected();
+
+    // can still get data
+    GeodeAwaitility.await().atMost(RETRIEVE_REDIS_VALUE_TIMEOUT, TimeUnit.SECONDS)
+        .untilAsserted(() ->assertThat(jedisConnections[jedisIndex].get(KEY)).isEqualTo(VALUE));
+
   }
 
 }
