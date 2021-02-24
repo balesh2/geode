@@ -27,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
@@ -57,7 +56,6 @@ public class RestartOfMemberDistributedTest {
 
     addIgnoredException(ForcedDisconnectException.class.getName());
     addIgnoredException(MemberDisconnectedException.class.getName());
-    addIgnoredException(AlertingIOException.class);
     addIgnoredException("Possible loss of quorum due to the loss");
     addIgnoredException("Received invalid result from");
   }
