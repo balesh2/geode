@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 # Redis commands
-org.apache.geode.redis.internal.gfsh.RedisCommand
+org.apache.geode.redis.internal.gfsh.RedisCompatibilityCommand

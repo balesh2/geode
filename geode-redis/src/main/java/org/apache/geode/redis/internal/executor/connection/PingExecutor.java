@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -28,9 +28,10 @@ public class PingExecutor extends AbstractExecutor {
   private final String PING_RESPONSE = "PONG";
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisResponse redisResponse;
+    RedisCompatibilityResponse redisCompatibilityResponse;
 
     context.eventLoopReady();
 
@@ -41,7 +42,7 @@ public class PingExecutor extends AbstractExecutor {
       } else {
         result = PING_RESPONSE.getBytes();
       }
-      redisResponse = RedisResponse.string(result);
+      redisCompatibilityResponse = RedisCompatibilityResponse.string(result);
     } else {
       byte[] result;
 
@@ -50,10 +51,11 @@ public class PingExecutor extends AbstractExecutor {
       } else {
         result = "".getBytes();
       }
-      redisResponse =
-          RedisResponse.array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
+      redisCompatibilityResponse =
+          RedisCompatibilityResponse
+              .array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
     }
 
-    return redisResponse;
+    return redisCompatibilityResponse;
   }
 }

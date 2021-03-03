@@ -25,12 +25,12 @@ import org.junit.Test;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 
 public class ScanIntegrationTest extends AbstractScanIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

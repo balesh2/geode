@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
+import static org.apache.geode.redis.internal.RedisCompatibilityServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,7 +51,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.redis.session.springRedisCompatibilityTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;

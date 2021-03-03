@@ -33,14 +33,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.redis.session.springRedisCompatibilityTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class HSetNXDunitTest {
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule();
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();

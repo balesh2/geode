@@ -28,9 +28,9 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.Slowlog;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractSlowlogIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSlowlogIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =

@@ -28,7 +28,8 @@ public class MinimumParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     if (command.getProcessedCommand().size() < minimum) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+      throw new RedisCompatibilityParametersMismatchException(
+          command.wrongNumberOfArgumentsErrorMessage());
     }
   }
 

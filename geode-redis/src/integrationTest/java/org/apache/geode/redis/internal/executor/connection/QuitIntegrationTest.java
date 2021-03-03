@@ -28,7 +28,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class QuitIntegrationTest {
@@ -37,7 +37,7 @@ public class QuitIntegrationTest {
   protected static Jedis jedis;
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Before
   public void setUp() {

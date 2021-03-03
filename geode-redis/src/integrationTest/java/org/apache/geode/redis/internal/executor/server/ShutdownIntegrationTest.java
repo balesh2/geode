@@ -21,12 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 
 public class ShutdownIntegrationTest extends AbstractShutDownIntegrationTest {
 
   @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

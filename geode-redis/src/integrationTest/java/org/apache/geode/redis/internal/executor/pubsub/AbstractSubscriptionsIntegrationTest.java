@@ -31,10 +31,11 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractSubscriptionsIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSubscriptionsIntegrationTest implements
+    RedisCompatibilityPortSupplier {
 
   public static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());

@@ -35,9 +35,10 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.internal.statistics.EnabledStatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractRedisInfoStatsIntegrationTest implements
+    RedisCompatibilityPortSupplier {
 
   private static final int TIMEOUT = (int) GeodeAwaitility.getTimeout().toMillis();
   private static final String EXISTING_HASH_KEY = "Existing_Hash";

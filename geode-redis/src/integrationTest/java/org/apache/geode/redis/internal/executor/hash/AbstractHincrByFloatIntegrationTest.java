@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
@@ -30,9 +30,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHincrByFloatIntegrationTest implements
+    RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;

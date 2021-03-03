@@ -14,13 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -30,7 +30,7 @@ public class BitOpExecutor extends StringExecutor {
       "BITOP NOT must be called with a single source key";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
@@ -39,7 +39,7 @@ public class BitOpExecutor extends StringExecutor {
         && !operation.equals("OR")
         && !operation.equals("XOR")
         && !operation.equals("NOT")) {
-      return RedisResponse.error(ERROR_SYNTAX);
+      return RedisCompatibilityResponse.error(ERROR_SYNTAX);
     }
 
     ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
@@ -50,11 +50,11 @@ public class BitOpExecutor extends StringExecutor {
       values.add(key);
     }
     if (operation.equals("NOT") && values.size() != 1) {
-      return RedisResponse.error(ERROR_BITOP_NOT);
+      return RedisCompatibilityResponse.error(ERROR_BITOP_NOT);
     }
 
     int result = getRedisStringCommands(context).bitop(operation, destKey, values);
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 }

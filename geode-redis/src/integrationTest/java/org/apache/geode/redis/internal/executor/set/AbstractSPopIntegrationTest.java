@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,9 +32,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSPopIntegrationTest implements RedisCompatibilityPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =

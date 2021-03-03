@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -41,10 +41,10 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHashesIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Random rand;
   private Jedis jedis;
@@ -221,12 +221,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hmget("farm", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.sadd("zoo", "elephant");
     assertThatThrownBy(() -> jedis.hmget("zoo", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -234,7 +234,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hdel("farm", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -264,11 +264,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHStrLen_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -285,11 +285,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHKeys_failsGivenWrongType() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hkeys("farm"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hkeys("tractor"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -407,11 +407,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHExists_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hexists("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hexists("tractor", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -519,11 +519,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void hvalsFailsForNonHash() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hvals("farm"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hvals("tractor"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -540,11 +540,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void hgetFailsForNonHash() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hget("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hget("tractor", "John Deere"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -828,7 +828,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test

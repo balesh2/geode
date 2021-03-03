@@ -43,16 +43,16 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
-import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisCompatibilityParametersMismatchException;
+import org.apache.geode.redis.internal.RedisCompatibilityCommandType;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityServer;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.data.RedisCompatibilityDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -77,7 +77,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
-  private final RedisStats redisStats;
+  private final NativeRedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
@@ -104,7 +104,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
-      RedisStats redisStats,
+      NativeRedisStats redisStats,
       ExecutorService backgroundExecutor,
       EventLoopGroup subscriberGroup,
       byte[] password,
@@ -129,7 +129,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     backgroundExecutor.submit(this::processCommandQueue);
   }
 
-  public ChannelFuture writeToChannel(RedisResponse response) {
+  public ChannelFuture writeToChannel(RedisCompatibilityResponse response) {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
@@ -178,7 +178,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    RedisResponse exceptionResponse = getExceptionResponse(ctx, cause);
+    RedisCompatibilityResponse exceptionResponse = getExceptionResponse(ctx, cause);
     if (exceptionResponse != null) {
       writeToChannel(exceptionResponse);
     }
@@ -211,8 +211,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     });
   }
 
-  private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
-    RedisResponse response;
+  private RedisCompatibilityResponse getExceptionResponse(ChannelHandlerContext ctx,
+      Throwable cause) {
+    RedisCompatibilityResponse response;
     if (cause instanceof IOException) {
       channelInactive(ctx);
       return null;
@@ -227,20 +228,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     if (cause instanceof NumberFormatException) {
-      response = RedisResponse.error(cause.getMessage());
+      response = RedisCompatibilityResponse.error(cause.getMessage());
     } else if (cause instanceof ArithmeticException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof RedisDataTypeMismatchException) {
-      response = RedisResponse.wrongType(cause.getMessage());
+      response = RedisCompatibilityResponse.error(cause.getMessage());
+    } else if (cause instanceof RedisCompatibilityDataTypeMismatchException) {
+      response = RedisCompatibilityResponse.wrongType(cause.getMessage());
     } else if (cause instanceof DecoderException
-        && cause.getCause() instanceof RedisCommandParserException) {
-      response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
+        && cause.getCause() instanceof RedisCompatibilityCommandParserException) {
+      response =
+          RedisCompatibilityResponse.error(RedisCompatibilityConstants.PARSING_EXCEPTION_MESSAGE);
 
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
-      response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
+      response =
+          RedisCompatibilityResponse.error(RedisCompatibilityConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException
-        || cause instanceof RedisParametersMismatchException) {
-      response = RedisResponse.error(cause.getMessage());
+        || cause instanceof RedisCompatibilityParametersMismatchException) {
+      response = RedisCompatibilityResponse.error(cause.getMessage());
     } else if (cause instanceof FunctionInvocationTargetException
         || cause instanceof DistributedSystemDisconnectedException
         || cause instanceof ForcedDisconnectException) {
@@ -253,7 +256,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
       }
-      response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
+      response = RedisCompatibilityResponse.error(RedisCompatibilityConstants.SERVER_ERROR_MESSAGE);
     }
 
     return response;
@@ -293,20 +296,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
       if (command.isUnsupported() && !allowUnsupportedCommands()) {
         writeToChannel(
-            RedisResponse
-                .error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+            RedisCompatibilityResponse
+                .error(command.getCommandType()
+                    + RedisCompatibilityConstants.ERROR_UNSUPPORTED_COMMAND));
         return;
       }
 
       if (command.isUnimplemented()) {
         logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
-        writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
+        writeToChannel(
+            RedisCompatibilityResponse.error(command.getCommandType() + " is not implemented."));
         return;
       }
 
       if (!getPubSub().findSubscriptionNames(getClient()).isEmpty()) {
         if (!command.getCommandType().isAllowedWhileSubscribed()) {
-          writeToChannel(RedisResponse
+          writeToChannel(RedisCompatibilityResponse
               .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
         }
       }
@@ -318,7 +323,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         redisStats.endCommand(command.getCommandType(), start);
       }
 
-      if (command.isOfType(RedisCommandType.QUIT)) {
+      if (command.isOfType(RedisCompatibilityCommandType.QUIT)) {
         channelInactive(command.getChannelHandlerContext());
       }
     } catch (Exception e) {
@@ -331,17 +336,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return allowUnsupportedSupplier.get();
   }
 
-  private RedisResponse handleUnAuthenticatedCommand(Command command) {
-    RedisResponse response;
-    if (command.isOfType(RedisCommandType.AUTH)) {
+  private RedisCompatibilityResponse handleUnAuthenticatedCommand(Command command) {
+    RedisCompatibilityResponse response;
+    if (command.isOfType(RedisCompatibilityCommandType.AUTH)) {
       response = command.execute(this);
     } else {
-      response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
+      response = RedisCompatibilityResponse.customError(RedisCompatibilityConstants.ERROR_NOT_AUTH);
     }
     return response;
   }
 
-  private void logResponse(RedisResponse response, String extraMessage, Throwable cause) {
+  private void logResponse(RedisCompatibilityResponse response, String extraMessage,
+      Throwable cause) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
       if (cause == null) {
@@ -373,7 +379,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
-   * to {@link GeodeRedisServer}.
+   * to {@link RedisCompatibilityServer}.
    */
   public byte[] getAuthPassword() {
     return this.authPassword;
@@ -411,7 +417,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return pubsub;
   }
 
-  public RedisStats getRedisStats() {
+  public NativeRedisStats getRedisStats() {
     return redisStats;
   }
 

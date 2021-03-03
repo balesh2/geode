@@ -19,25 +19,25 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class TTLExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
-    long result = redisKeyCommands.pttl(key);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands = getRedisKeyCommands(context);
+    long result = redisCompatibilityKeyCommands.pttl(key);
     if (result > 0 && !timeUnitMillis()) {
       // Round up because redis does
       result = MILLISECONDS.toSeconds(result + 500);
     }
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 
   protected boolean timeUnitMillis() {

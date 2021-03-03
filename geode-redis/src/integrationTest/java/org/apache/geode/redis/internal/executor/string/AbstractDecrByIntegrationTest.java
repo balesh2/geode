@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,9 +28,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractDecrByIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private Random rand;

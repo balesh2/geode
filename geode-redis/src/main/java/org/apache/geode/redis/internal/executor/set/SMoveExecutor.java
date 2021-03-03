@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisDataType;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.data.RedisCompatibilityDataType;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -32,7 +32,7 @@ public class SMoveExecutor extends SetExecutor {
   private static final int NOT_MOVED = 0;
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
@@ -41,19 +41,20 @@ public class SMoveExecutor extends SetExecutor {
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
     String destinationType = getRedisKeyCommands(context).internalType(destination);
-    if (!destinationType.equals(RedisDataType.REDIS_SET.toString())
+    if (!destinationType.equals(RedisCompatibilityDataType.REDIS_SET.toString())
         && !destinationType.equals("none")) {
-      return RedisResponse.wrongType(RedisConstants.ERROR_WRONG_TYPE);
+      return RedisCompatibilityResponse.wrongType(RedisCompatibilityConstants.ERROR_WRONG_TYPE);
     }
 
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
 
-    boolean removed = redisSetCommands.srem(source,
+    boolean removed = redisCompatibilitySetCommands.srem(source,
         new ArrayList<>(Collections.singletonList(member))) == 1;
     if (!removed) {
-      return RedisResponse.integer(NOT_MOVED);
+      return RedisCompatibilityResponse.integer(NOT_MOVED);
     }
-    redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
-    return RedisResponse.integer(MOVED);
+    redisCompatibilitySetCommands.sadd(destination,
+        new ArrayList<>(Collections.singletonList(member)));
+    return RedisCompatibilityResponse.integer(MOVED);
   }
 }

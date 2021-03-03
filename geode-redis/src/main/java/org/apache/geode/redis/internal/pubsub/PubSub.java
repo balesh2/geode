@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -39,7 +39,7 @@ public interface PubSub {
    * @return the number of messages published
    */
   long publish(
-      Region<ByteArrayWrapper, RedisData> dataRegion,
+      Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
       byte[] channel, byte[] message);
 
   /**

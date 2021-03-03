@@ -15,7 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_UNKNOWN_COMMAND;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class UnknownExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     StringBuilder commandArguments = new StringBuilder();
@@ -47,6 +47,7 @@ public class UnknownExecutor extends AbstractExecutor {
       }
     }
 
-    return RedisResponse.error(String.format(ERROR_UNKNOWN_COMMAND, commandText, commandArguments));
+    return RedisCompatibilityResponse
+        .error(String.format(ERROR_UNKNOWN_COMMAND, commandText, commandArguments));
   }
 }

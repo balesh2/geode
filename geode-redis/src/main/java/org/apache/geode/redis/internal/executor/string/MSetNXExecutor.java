@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommands;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -30,18 +30,19 @@ public class MSetNXExecutor extends StringExecutor {
   private static final int NOT_SET = 0;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
-    RedisKeyCommands keyCommands = getRedisKeyCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityKeyCommands keyCommands = getRedisKeyCommands(context);
 
     // TODO: make this atomic
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
       if (keyCommands.exists(key)) {
-        return RedisResponse.integer(NOT_SET);
+        return RedisCompatibilityResponse.integer(NOT_SET);
       }
     }
 
@@ -54,7 +55,7 @@ public class MSetNXExecutor extends StringExecutor {
       stringCommands.set(key, value, null);
     }
 
-    return RedisResponse.integer(SET);
+    return RedisCompatibilityResponse.integer(SET);
   }
 
 }

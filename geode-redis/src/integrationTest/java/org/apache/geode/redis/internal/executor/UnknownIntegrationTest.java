@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor;
 import org.junit.ClassRule;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
@@ -28,7 +28,7 @@ public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

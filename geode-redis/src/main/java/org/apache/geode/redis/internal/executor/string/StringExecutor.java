@@ -20,7 +20,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
-  protected RedisStringCommands getRedisStringCommands(ExecutionHandlerContext context) {
-    return new RedisStringCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
+  protected RedisCompatibilityStringCommands getRedisStringCommands(
+      ExecutionHandlerContext context) {
+    return new RedisCompatibilityStringCommandsFunctionInvoker(
+        context.getRegionProvider().getDataRegion());
   }
 }

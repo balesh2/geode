@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class TimeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<String> results = new ArrayList<>();
     long timeStamp = System.currentTimeMillis();
@@ -36,6 +36,6 @@ public class TimeExecutor extends AbstractExecutor {
     results.add(Long.toString(seconds));
     results.add(Long.toString(microSeconds));
 
-    return RedisResponse.array(results);
+    return RedisCompatibilityResponse.array(results);
   }
 }

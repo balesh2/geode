@@ -50,7 +50,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 import org.apache.geode.test.dunit.rules.SerializableFunction;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -63,7 +63,8 @@ public class PubSubDUnitTest {
   public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(6);
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule(6);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

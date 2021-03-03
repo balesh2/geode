@@ -48,16 +48,17 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
-import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.redis.session.springRedisCompatibilityTestApplication.RedisCompatibilitySpringTestApplication;
+import org.apache.geode.redis.session.springRedisCompatibilityTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 
 public abstract class SessionDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -154,7 +155,7 @@ public abstract class SessionDUnitTest {
         args[i] = "" + serverPorts[i];
       }
       springApplicationContext = SpringApplication.run(
-          RedisSpringTestApplication.class, args);
+          RedisCompatibilitySpringTestApplication.class, args);
     });
   }
 

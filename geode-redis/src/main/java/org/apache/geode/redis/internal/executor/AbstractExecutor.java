@@ -17,31 +17,34 @@ package org.apache.geode.redis.internal.executor;
 import java.util.Collection;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.internal.RedisCompatibilityServer;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommands;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
- * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
+ * The AbstractExecutor is the base of all {@link Executor} types for the
+ * {@link RedisCompatibilityServer}.
  */
 public abstract class AbstractExecutor implements Executor {
 
-  protected RedisResponse respondBulkStrings(Object message) {
+  protected RedisCompatibilityResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {
-      return RedisResponse.array((Collection<?>) message);
+      return RedisCompatibilityResponse.array((Collection<?>) message);
     } else {
-      return RedisResponse.bulkString(message);
+      return RedisCompatibilityResponse.bulkString(message);
     }
   }
 
-  protected RedisKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
-    return new RedisKeyCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
+  protected RedisCompatibilityKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
+    return new RedisCompatibilityKeyCommandsFunctionInvoker(
+        context.getRegionProvider().getDataRegion());
   }
 
-  protected Region<ByteArrayWrapper, RedisData> getDataRegion(ExecutionHandlerContext context) {
+  protected Region<ByteArrayWrapper, RedisCompatibilityData> getDataRegion(
+      ExecutionHandlerContext context) {
     return context.getRegionProvider().getDataRegion();
   }
 }

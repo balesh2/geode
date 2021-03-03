@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -36,13 +36,14 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class HLenExecutor extends HashExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    int len = redisHashCommands.hlen(key);
+    RedisCompatibilityHashCommands redisCompatibilityHashCommands =
+        createRedisHashCommands(context);
+    int len = redisCompatibilityHashCommands.hlen(key);
 
-    return RedisResponse.integer(len);
+    return RedisCompatibilityResponse.integer(len);
   }
 
 }

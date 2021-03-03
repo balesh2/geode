@@ -20,7 +20,7 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -38,10 +38,11 @@ public class SetEXExecutor extends StringExecutor {
   private static final int VALUE_INDEX = 3;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
@@ -51,11 +52,11 @@ public class SetEXExecutor extends StringExecutor {
     try {
       expiration = Coder.bytesToLong(expirationArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_SECONDS_NOT_A_NUMBER);
+      return RedisCompatibilityResponse.error(ERROR_SECONDS_NOT_A_NUMBER);
     }
 
     if (expiration <= 0) {
-      return RedisResponse.error(ERROR_SECONDS_NOT_LEGAL);
+      return RedisCompatibilityResponse.error(ERROR_SECONDS_NOT_LEGAL);
     }
 
     if (!timeUnitMillis()) {
@@ -65,7 +66,7 @@ public class SetEXExecutor extends StringExecutor {
 
     stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
 
-    return RedisResponse.string(SUCCESS);
+    return RedisCompatibilityResponse.string(SUCCESS);
   }
 
   protected boolean timeUnitMillis() {

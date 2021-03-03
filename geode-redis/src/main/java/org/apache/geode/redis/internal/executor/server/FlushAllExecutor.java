@@ -17,23 +17,23 @@ package org.apache.geode.redis.internal.executor.server;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommands;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands = getRedisKeyCommands(context);
 
     for (ByteArrayWrapper skey : context.getRegionProvider().getDataRegion().keySet()) {
-      redisKeyCommands.del(skey);
+      redisCompatibilityKeyCommands.del(skey);
     }
 
-    return RedisResponse.string("OK");
+    return RedisCompatibilityResponse.string("OK");
   }
 
 }

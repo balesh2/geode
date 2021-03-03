@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -37,20 +37,21 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class HGetExecutor extends HashExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    ByteArrayWrapper valueWrapper = redisHashCommands.hget(key, field);
+    RedisCompatibilityHashCommands redisCompatibilityHashCommands =
+        createRedisHashCommands(context);
+    ByteArrayWrapper valueWrapper = redisCompatibilityHashCommands.hget(key, field);
 
     if (valueWrapper != null) {
-      return RedisResponse.bulkString(valueWrapper);
+      return RedisCompatibilityResponse.bulkString(valueWrapper);
     } else {
-      return RedisResponse.nil();
+      return RedisCompatibilityResponse.nil();
     }
   }
 }

@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -26,9 +26,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractFlushDBIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractFlushDBIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =

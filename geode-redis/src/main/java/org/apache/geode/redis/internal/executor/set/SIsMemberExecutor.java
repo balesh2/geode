@@ -17,21 +17,21 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SIsMemberExecutor extends SetExecutor {
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
 
-    boolean exists = redisSetCommands.sismember(key, member);
+    boolean exists = redisCompatibilitySetCommands.sismember(key, member);
 
-    return RedisResponse.integer(exists);
+    return RedisCompatibilityResponse.integer(exists);
   }
 }

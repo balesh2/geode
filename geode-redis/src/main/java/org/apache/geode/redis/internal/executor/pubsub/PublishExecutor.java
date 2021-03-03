@@ -18,14 +18,14 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PublishExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     List<byte[]> args = command.getProcessedCommand();
@@ -34,6 +34,6 @@ public class PublishExecutor extends AbstractExecutor {
     long publishCount = context.getPubSub()
         .publish(context.getRegionProvider().getDataRegion(), channelName, message);
 
-    return RedisResponse.integer(publishCount);
+    return RedisCompatibilityResponse.integer(publishCount);
   }
 }

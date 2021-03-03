@@ -17,12 +17,12 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 
 public class HincrByFloatIntegrationTest extends AbstractHincrByFloatIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

@@ -24,8 +24,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public abstract class HashExecutor extends AbstractExecutor {
   static final int FIELD_INDEX = 2;
 
-  RedisHashCommands createRedisHashCommands(ExecutionHandlerContext context) {
-    return new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
+  RedisCompatibilityHashCommands createRedisHashCommands(ExecutionHandlerContext context) {
+    return new RedisCompatibilityHashCommandsFunctionInvoker(
+        context.getRegionProvider().getDataRegion());
   }
 
 }

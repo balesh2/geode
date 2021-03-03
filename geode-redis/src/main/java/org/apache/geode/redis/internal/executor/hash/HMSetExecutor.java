@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -47,17 +47,18 @@ public class HMSetExecutor extends HashExecutor {
   private static final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    RedisCompatibilityHashCommands redisCompatibilityHashCommands =
+        createRedisHashCommands(context);
     ArrayList<ByteArrayWrapper> fieldsToSet =
         new ArrayList<>(commandElems.subList(2, commandElems.size()));
-    redisHashCommands.hset(key, fieldsToSet, false);
+    redisCompatibilityHashCommands.hset(key, fieldsToSet, false);
 
-    return RedisResponse.ok();
+    return RedisCompatibilityResponse.ok();
   }
 
 }

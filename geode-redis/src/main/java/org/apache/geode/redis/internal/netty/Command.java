@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisCompatibilityCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 
 /**
  * The command class is used in holding a received Redis command. Each sent command resides in an
@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 public class Command {
 
   private final List<byte[]> commandElems;
-  private final RedisCommandType commandType;
+  private final RedisCompatibilityCommandType commandType;
   private String key;
   private ByteArrayWrapper bytes;
 
@@ -57,13 +57,13 @@ public class Command {
     }
     this.commandElems = commandElems;
 
-    RedisCommandType type;
+    RedisCompatibilityCommandType type;
     try {
       byte[] charCommand = commandElems.get(0);
       String commandName = Coder.bytesToString(charCommand).toUpperCase();
-      type = RedisCommandType.valueOf(commandName);
+      type = RedisCompatibilityCommandType.valueOf(commandName);
     } catch (Exception e) {
-      type = RedisCommandType.UNKNOWN;
+      type = RedisCompatibilityCommandType.UNKNOWN;
     }
     this.commandType = type;
   }
@@ -107,7 +107,7 @@ public class Command {
    *
    * @return The command type
    */
-  public RedisCommandType getCommandType() {
+  public RedisCompatibilityCommandType getCommandType() {
     return this.commandType;
   }
 
@@ -177,12 +177,12 @@ public class Command {
     return builder.toString();
   }
 
-  public RedisResponse execute(ExecutionHandlerContext executionHandlerContext) {
-    RedisCommandType type = getCommandType();
+  public RedisCompatibilityResponse execute(ExecutionHandlerContext executionHandlerContext) {
+    RedisCompatibilityCommandType type = getCommandType();
     return type.executeCommand(this, executionHandlerContext);
   }
 
-  public boolean isOfType(RedisCommandType type) {
+  public boolean isOfType(RedisCompatibilityCommandType type) {
     return type == getCommandType();
   }
 

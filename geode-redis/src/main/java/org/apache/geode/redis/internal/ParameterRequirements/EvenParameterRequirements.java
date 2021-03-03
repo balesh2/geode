@@ -33,7 +33,7 @@ public class EvenParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
     if (!isEven(command.getProcessedCommand().size())) {
-      throw new RedisParametersMismatchException(getErrorMessage(command));
+      throw new RedisCompatibilityParametersMismatchException(getErrorMessage(command));
     }
   }
 

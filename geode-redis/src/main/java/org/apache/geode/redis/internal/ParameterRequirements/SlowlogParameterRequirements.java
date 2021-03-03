@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -27,13 +27,14 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
     int numberOfArguments = command.getProcessedCommand().size();
 
     if (numberOfArguments < 2) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+      throw new RedisCompatibilityParametersMismatchException(
+          command.wrongNumberOfArgumentsErrorMessage());
     } else if (numberOfArguments == 2) {
       confirmKnownSubcommands(command);
     } else if (numberOfArguments == 3) {
       confirmArgumentsToGetSubcommand(command);
     } else { // numberOfArguments > 3
-      throw new RedisParametersMismatchException(
+      throw new RedisCompatibilityParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
     }
   }
@@ -42,20 +43,20 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
     if (!command.getStringKey().toLowerCase().equals("reset") &&
         !command.getStringKey().toLowerCase().equals("len") &&
         !command.getStringKey().toLowerCase().equals("get")) {
-      throw new RedisParametersMismatchException(
+      throw new RedisCompatibilityParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
     }
   }
 
   private void confirmArgumentsToGetSubcommand(Command command) {
     if (!command.getStringKey().toLowerCase().equals("get")) {
-      throw new RedisParametersMismatchException(
+      throw new RedisCompatibilityParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
     }
     try {
       Long.parseLong(new String(command.getProcessedCommand().get(2)));
     } catch (NumberFormatException nex) {
-      throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
+      throw new RedisCompatibilityParametersMismatchException(ERROR_NOT_INTEGER);
     }
   }
 

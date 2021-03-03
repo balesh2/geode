@@ -15,11 +15,11 @@
 package org.apache.geode.redis.internal.executor.set;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityDataType.REDIS_SET;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -30,8 +30,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.data.RedisCompatibilityDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
@@ -53,22 +53,22 @@ public class SScanExecutor extends AbstractScanExecutor {
     try {
       cursor = new BigInteger(cursorString).abs();
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_CURSOR);
+      return RedisCompatibilityResponse.error(ERROR_CURSOR);
     }
 
     if (cursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
-      return RedisResponse.error(ERROR_CURSOR);
+      return RedisCompatibilityResponse.error(ERROR_CURSOR);
     }
 
     ByteArrayWrapper key = command.getKey();
 
     if (!getDataRegion(context).containsKey(key)) {
       context.getRedisStats().incKeyspaceMisses();
-      return RedisResponse.emptyScan();
+      return RedisCompatibilityResponse.emptyScan();
     }
 
     if (getDataRegion(context).get(key).getType() != REDIS_SET) {
-      throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
+      throw new RedisCompatibilityDataTypeMismatchException(ERROR_WRONG_TYPE);
     }
 
     command.getCommandType().checkDeferredParameters(command, context);
@@ -89,15 +89,15 @@ public class SScanExecutor extends AbstractScanExecutor {
         try {
           count = Coder.bytesToInt(commandElemBytes);
         } catch (NumberFormatException e) {
-          return RedisResponse.error(ERROR_NOT_INTEGER);
+          return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
         }
 
         if (count < 1) {
-          return RedisResponse.error(ERROR_SYNTAX);
+          return RedisCompatibilityResponse.error(ERROR_SYNTAX);
         }
 
       } else {
-        return RedisResponse.error(ERROR_SYNTAX);
+        return RedisCompatibilityResponse.error(ERROR_SYNTAX);
       }
     }
 
@@ -107,16 +107,17 @@ public class SScanExecutor extends AbstractScanExecutor {
       LogService.getLogger().warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. SSCAN will return an empty list.",
           globPattern, e.getMessage());
-      return RedisResponse.emptyScan();
+      return RedisCompatibilityResponse.emptyScan();
     }
 
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands =
+        new RedisCompatibilitySetCommandsFunctionInvoker(
+            context.getRegionProvider().getDataRegion());
     Pair<BigInteger, List<Object>> scanResult =
-        redisSetCommands.sscan(key, matchPattern, count, cursor);
+        redisCompatibilitySetCommands.sscan(key, matchPattern, count, cursor);
 
     context.setSscanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    return RedisCompatibilityResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 }

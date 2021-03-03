@@ -30,14 +30,15 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class PersistDUnitTest implements Serializable {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule(5);
 
   private static String LOCALHOST = "localhost";
 

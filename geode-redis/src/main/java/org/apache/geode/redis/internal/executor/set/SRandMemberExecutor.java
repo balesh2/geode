@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -28,7 +28,7 @@ public class SRandMemberExecutor extends SetExecutor {
   private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
@@ -42,23 +42,23 @@ public class SRandMemberExecutor extends SetExecutor {
         count = Coder.bytesToInt(commandElems.get(2));
         countSpecified = true;
       } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_NUMERIC);
+        return RedisCompatibilityResponse.error(ERROR_NOT_NUMERIC);
       }
     }
 
     if (count == 0) {
-      return RedisResponse.emptyArray();
+      return RedisCompatibilityResponse.emptyArray();
     }
 
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
+    Collection<ByteArrayWrapper> results = redisCompatibilitySetCommands.srandmember(key, count);
 
     if (countSpecified) {
-      return RedisResponse.array(results);
+      return RedisCompatibilityResponse.array(results);
     } else if (results.isEmpty()) {
-      return RedisResponse.nil();
+      return RedisCompatibilityResponse.nil();
     } else {
-      return RedisResponse.bulkString(results.iterator().next());
+      return RedisCompatibilityResponse.bulkString(results.iterator().next());
     }
   }
 }

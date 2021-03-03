@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -31,10 +31,11 @@ public class IncrByExecutor extends StringExecutor {
   private static final int INCREMENT_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;
@@ -42,10 +43,10 @@ public class IncrByExecutor extends StringExecutor {
     try {
       increment = Coder.bytesToLong(incrArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
+      return RedisCompatibilityResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
     long value = stringCommands.incrby(key, increment);
-    return RedisResponse.integer(value);
+    return RedisCompatibilityResponse.integer(value);
   }
 }

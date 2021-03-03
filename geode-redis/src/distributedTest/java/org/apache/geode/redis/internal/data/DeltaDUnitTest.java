@@ -38,13 +38,14 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 
 @SuppressWarnings("unchecked")
 public class DeltaDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
+  public static RedisCompatibilityClusterStartupRule clusterStartUp =
+      new RedisCompatibilityClusterStartupRule(4);
 
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int ITERATION_COUNT = 1000;
@@ -203,8 +204,8 @@ public class DeltaDUnitTest {
         assertThat(bucket1).containsExactlyInAnyOrderEntriesOf(bucket2);
 
         bucket1.keySet().forEach(key -> {
-          RedisData value1 = (RedisData) bucket1.get(key);
-          RedisData value2 = (RedisData) bucket2.get(key);
+          RedisCompatibilityData value1 = (RedisCompatibilityData) bucket1.get(key);
+          RedisCompatibilityData value2 = (RedisCompatibilityData) bucket2.get(key);
 
           assertThat(value1.getExpirationTimestamp()).isEqualTo(value2.getExpirationTimestamp());
         });

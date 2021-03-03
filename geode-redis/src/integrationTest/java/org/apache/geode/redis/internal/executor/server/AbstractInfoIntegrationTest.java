@@ -35,9 +35,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractInfoIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private static final String KEYSPACE_START = "db0";
   private Jedis jedis;

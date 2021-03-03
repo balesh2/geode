@@ -16,7 +16,7 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -24,16 +24,16 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SlowlogExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     String subCommand = command.getStringKey().toLowerCase();
     switch (subCommand) {
       case "get":
-        return RedisResponse.emptyArray();
+        return RedisCompatibilityResponse.emptyArray();
       case "len":
-        return RedisResponse.integer(0);
+        return RedisCompatibilityResponse.integer(0);
       case "reset":
-        return RedisResponse.ok();
+        return RedisCompatibilityResponse.ok();
       default:
         return null; // Should never happen
     }

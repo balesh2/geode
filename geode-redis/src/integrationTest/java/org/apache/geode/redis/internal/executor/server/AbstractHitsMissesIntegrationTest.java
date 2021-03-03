@@ -32,9 +32,9 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHitsMissesIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private static final String HITS = "keyspace_hits";
   private static final String MISSES = "keyspace_misses";

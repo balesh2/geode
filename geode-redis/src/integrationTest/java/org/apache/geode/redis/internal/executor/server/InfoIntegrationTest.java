@@ -19,12 +19,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 
 public class InfoIntegrationTest extends AbstractInfoIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule()
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule()
       .withProperty(LOG_LEVEL, "info");
 
   @Override

@@ -20,13 +20,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class GeodeServerRunTest {
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Test
   @Ignore("This is a no-op test to conveniently run redis api for geode server for local development/testing purposes")

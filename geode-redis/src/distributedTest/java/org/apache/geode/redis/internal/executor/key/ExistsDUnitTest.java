@@ -26,14 +26,15 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class ExistsDUnitTest implements Serializable {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(3);
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule(3);
 
   private static String LOCALHOST = "localhost";
 

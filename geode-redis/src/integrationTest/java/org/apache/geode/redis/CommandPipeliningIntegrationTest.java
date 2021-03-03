@@ -20,7 +20,7 @@ import org.junit.ClassRule;
 public class CommandPipeliningIntegrationTest extends AbstractCommandPipeliningIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

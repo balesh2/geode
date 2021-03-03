@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.Subscription;
@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.pubsub.Subscription;
 public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     context.eventLoopReady();
@@ -43,7 +43,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
     Collection<Collection<?>> response = unsubscribe(context, channelNames);
 
-    return RedisResponse.flattenedArray(response);
+    return RedisCompatibilityResponse.flattenedArray(response);
   }
 
   private List<byte[]> extractChannelNames(Command command) {

@@ -35,7 +35,7 @@ public class MaximumParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
     if (command.getProcessedCommand().size() > maximum) {
-      throw new RedisParametersMismatchException(getErrorMessage(command));
+      throw new RedisCompatibilityParametersMismatchException(getErrorMessage(command));
     }
   }
 

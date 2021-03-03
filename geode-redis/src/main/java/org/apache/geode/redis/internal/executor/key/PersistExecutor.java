@@ -18,21 +18,23 @@ package org.apache.geode.redis.internal.executor.key;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PersistExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
-        context.getRegionProvider().getDataRegion());
-    int result = redisKeyCommands.persist(key);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands =
+        new RedisCompatibilityKeyCommandsFunctionInvoker(
+            context.getRegionProvider().getDataRegion());
+    int result = redisCompatibilityKeyCommands.persist(key);
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 
 }

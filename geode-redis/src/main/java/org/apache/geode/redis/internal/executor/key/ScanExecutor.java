@@ -15,9 +15,9 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -39,7 +39,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     String cursorString = command.getStringKey();
@@ -51,11 +52,11 @@ public class ScanExecutor extends AbstractScanExecutor {
     try {
       cursor = new BigInteger(cursorString).abs();
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_CURSOR);
+      return RedisCompatibilityResponse.error(ERROR_CURSOR);
     }
 
     if (cursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
-      return RedisResponse.error(ERROR_CURSOR);
+      return RedisCompatibilityResponse.error(ERROR_CURSOR);
     }
 
     if (!cursor.equals(context.getScanCursor())) {
@@ -74,15 +75,15 @@ public class ScanExecutor extends AbstractScanExecutor {
         try {
           count = Coder.bytesToInt(commandElemBytes);
         } catch (NumberFormatException e) {
-          return RedisResponse.error(ERROR_NOT_INTEGER);
+          return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
         }
 
         if (count < 1) {
-          return RedisResponse.error(ERROR_SYNTAX);
+          return RedisCompatibilityResponse.error(ERROR_SYNTAX);
         }
 
       } else {
-        return RedisResponse.error(ERROR_SYNTAX);
+        return RedisCompatibilityResponse.error(ERROR_SYNTAX);
       }
     }
 
@@ -92,14 +93,14 @@ public class ScanExecutor extends AbstractScanExecutor {
       LogService.getLogger().warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. SCAN will return an empty list.",
           globPattern, e.getMessage());
-      return RedisResponse.emptyScan();
+      return RedisCompatibilityResponse.emptyScan();
     }
 
     Pair<BigInteger, List<Object>> scanResult =
         scan(getDataRegion(context).keySet(), matchPattern, count, cursor);
     context.setScanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    return RedisCompatibilityResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 
   private Pair<BigInteger, List<Object>> scan(Collection<ByteArrayWrapper> list,

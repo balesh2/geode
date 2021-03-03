@@ -15,21 +15,21 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class QuitExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     context.eventLoopReady();
 
-    return RedisResponse.string(RedisConstants.QUIT_RESPONSE);
+    return RedisCompatibilityResponse.string(RedisCompatibilityConstants.QUIT_RESPONSE);
   }
 
 }

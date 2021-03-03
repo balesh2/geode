@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisCompatibilityCommandType;
 
 
 /**
@@ -54,12 +54,12 @@ public class CommandJUnitTest {
     Command cmd = new Command(list3);
     assertThat(cmd.getCommandType()).isNotNull();
 
-    assertThat(cmd.getCommandType()).isEqualTo(RedisCommandType.UNKNOWN);
+    assertThat(cmd.getCommandType()).isEqualTo(RedisCompatibilityCommandType.UNKNOWN);
     list3.clear();
-    list3.add(RedisCommandType.HEXISTS.toString().getBytes(StandardCharsets.UTF_8));
+    list3.add(RedisCompatibilityCommandType.HEXISTS.toString().getBytes(StandardCharsets.UTF_8));
     cmd = new Command(list3);
     assertThat(cmd.getCommandType()).isNotNull();
-    assertThat(cmd.getCommandType()).isEqualTo(RedisCommandType.HEXISTS);
+    assertThat(cmd.getCommandType()).isEqualTo(RedisCompatibilityCommandType.HEXISTS);
     assertThat(cmd.getProcessedCommand()).isEqualTo(list3);
     assertThat(cmd.getKey()).isNull();
 

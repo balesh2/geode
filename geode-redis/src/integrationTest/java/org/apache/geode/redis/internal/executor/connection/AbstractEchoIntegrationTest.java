@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,9 +25,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractEchoIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractEchoIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());

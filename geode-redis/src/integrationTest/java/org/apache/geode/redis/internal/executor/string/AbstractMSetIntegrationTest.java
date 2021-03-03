@@ -33,9 +33,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractMSetIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractMSetIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;

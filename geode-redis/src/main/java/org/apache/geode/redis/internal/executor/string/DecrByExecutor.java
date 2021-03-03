@@ -15,12 +15,12 @@
 package org.apache.geode.redis.internal.executor.string;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -30,7 +30,8 @@ public class DecrByExecutor extends StringExecutor {
   private static final int DECREMENT_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
 
@@ -41,10 +42,10 @@ public class DecrByExecutor extends StringExecutor {
     try {
       decrement = Long.parseLong(decrString);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INTEGER);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
     }
 
     long value = getRedisStringCommands(context).decrby(key, decrement);
-    return RedisResponse.integer(value);
+    return RedisCompatibilityResponse.integer(value);
   }
 }

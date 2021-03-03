@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.IntStream;
@@ -27,9 +27,9 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractMGetIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractMGetIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =

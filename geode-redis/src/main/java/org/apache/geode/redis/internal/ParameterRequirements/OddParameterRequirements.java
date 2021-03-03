@@ -32,7 +32,7 @@ public class OddParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
     if (!isOdd(command.getProcessedCommand().size())) {
-      throw new RedisParametersMismatchException(getErrorMessage(command));
+      throw new RedisCompatibilityParametersMismatchException(getErrorMessage(command));
     }
   }
 

@@ -47,10 +47,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractPubSubIntegrationTest implements RedisCompatibilityPortSupplier {
   private Jedis publisher;
   private Jedis subscriber;
 

@@ -21,10 +21,10 @@ import java.util.List;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
 public class InfoExecutor extends AbstractExecutor {
 
@@ -33,7 +33,7 @@ public class InfoExecutor extends AbstractExecutor {
   private DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     String result;
     List<ByteArrayWrapper> commands =
@@ -44,7 +44,7 @@ public class InfoExecutor extends AbstractExecutor {
     } else {
       result = getAllSections(context);
     }
-    return RedisResponse.bulkString(result);
+    return RedisCompatibilityResponse.bulkString(result);
   }
 
   private boolean containsSectionParameter(List<ByteArrayWrapper> commands) {
@@ -92,7 +92,7 @@ public class InfoExecutor extends AbstractExecutor {
   }
 
   private String getStatsSection(ExecutionHandlerContext context) {
-    final RedisStats redisStats = context.getRedisStats();
+    final NativeRedisStats redisStats = context.getRedisStats();
     String instantaneous_input_kbps =
         decimalFormat.format(redisStats
             .getNetworkKiloBytesReadOverLastSecond());
@@ -116,7 +116,7 @@ public class InfoExecutor extends AbstractExecutor {
     final String CURRENT_REDIS_VERSION = "5.0.6";
     // @todo test in info command integration test?
     final int TCP_PORT = context.getServerPort();
-    final RedisStats redisStats = context.getRedisStats();
+    final NativeRedisStats redisStats = context.getRedisStats();
     final String SERVER_STRING =
         "# Server\r\n" +
             "redis_version:" + CURRENT_REDIS_VERSION + "\r\n" +
@@ -128,7 +128,7 @@ public class InfoExecutor extends AbstractExecutor {
   }
 
   private String getClientsSection(ExecutionHandlerContext context) {
-    final RedisStats redisStats = context.getRedisStats();
+    final NativeRedisStats redisStats = context.getRedisStats();
     final String CLIENTS_STRING =
         "# Clients\r\n" +
             "connected_clients:" + redisStats.getConnectedClients() + "\r\n" +

@@ -16,16 +16,16 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.lang.Long.parseLong;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_INVALID_EXPIRE_TIME;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -35,38 +35,39 @@ public class SetExecutor extends StringExecutor {
   private static final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     ByteArrayWrapper keyToSet = command.getKey();
     List<byte[]> commandElementsBytes = command.getProcessedCommand();
     List<byte[]> optionalParameterBytes = getOptionalParameters(commandElementsBytes);
     ByteArrayWrapper valueToSet = getValueToSet(commandElementsBytes);
-    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands redisCompatibilityStringCommands =
+        getRedisStringCommands(context);
     SetOptions setOptions;
 
     try {
       setOptions = parseOptionalParameters(optionalParameterBytes);
     } catch (IllegalArgumentException ex) {
-      return RedisResponse.error(ex.getMessage());
+      return RedisCompatibilityResponse.error(ex.getMessage());
     }
 
-    return doSet(keyToSet, valueToSet, redisStringCommands, setOptions);
+    return doSet(keyToSet, valueToSet, redisCompatibilityStringCommands, setOptions);
   }
 
   private List<byte[]> getOptionalParameters(List<byte[]> commandElementsBytes) {
     return commandElementsBytes.subList(3, commandElementsBytes.size());
   }
 
-  private RedisResponse doSet(ByteArrayWrapper key, ByteArrayWrapper value,
-      RedisStringCommands redisStringCommands, SetOptions setOptions) {
+  private RedisCompatibilityResponse doSet(ByteArrayWrapper key, ByteArrayWrapper value,
+      RedisCompatibilityStringCommands redisCompatibilityStringCommands, SetOptions setOptions) {
 
-    boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);
+    boolean setCompletedSuccessfully = redisCompatibilityStringCommands.set(key, value, setOptions);
 
     if (setCompletedSuccessfully) {
-      return RedisResponse.string(SUCCESS);
+      return RedisCompatibilityResponse.string(SUCCESS);
     } else {
-      return RedisResponse.nil();
+      return RedisCompatibilityResponse.nil();
     }
   }
 

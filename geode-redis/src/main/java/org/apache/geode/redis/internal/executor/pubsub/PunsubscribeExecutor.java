@@ -27,7 +27,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.Subscription;
@@ -36,7 +36,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     context.eventLoopReady();
@@ -49,7 +49,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
 
     Collection<Collection<?>> response = punsubscribe(context, patternNames);
 
-    return RedisResponse.flattenedArray(response);
+    return RedisCompatibilityResponse.flattenedArray(response);
   }
 
   private List<byte[]> extractPatternNames(Command command) {

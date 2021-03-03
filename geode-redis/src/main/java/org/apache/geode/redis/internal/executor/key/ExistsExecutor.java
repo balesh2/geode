@@ -19,24 +19,24 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ExistsExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands = getRedisKeyCommands(context);
 
     long existsCount = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter(key -> redisKeyCommands.exists(key))
+        .filter(key -> redisCompatibilityKeyCommands.exists(key))
         .count();
 
-    return RedisResponse.integer(existsCount);
+    return RedisCompatibilityResponse.integer(existsCount);
   }
 }

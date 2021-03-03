@@ -36,12 +36,13 @@ import redis.clients.jedis.params.SetParams;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 
 public class StringsDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
+  public static RedisCompatibilityClusterStartupRule clusterStartUp =
+      new RedisCompatibilityClusterStartupRule(4);
 
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int LIST_SIZE = 1000;

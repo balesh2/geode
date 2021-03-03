@@ -19,16 +19,17 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MGetExecutor extends StringExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
 
     Collection<ByteArrayWrapper> values = new ArrayList<>();
     for (int i = 1; i < commandElems.size(); i++) {

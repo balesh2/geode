@@ -15,18 +15,19 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class StrlenExecutor extends StringExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
     int length = stringCommands.strlen(key);
-    return RedisResponse.integer(length);
+    return RedisCompatibilityResponse.integer(length);
   }
 }

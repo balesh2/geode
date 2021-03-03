@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.redis.internal.executor.string.BitOpExecutor.ERROR_BITOP_NOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,9 +28,9 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractBitOpIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
 

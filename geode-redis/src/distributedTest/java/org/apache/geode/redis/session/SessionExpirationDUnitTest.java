@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.redis.internal.data.RedisCompatibilityHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
@@ -144,10 +144,10 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
         Map<Object, Object> bucket2 = buckets.get(1).getValues();
 
         bucket1.keySet().forEach(key -> {
-          if (bucket1.get(key) instanceof RedisHash) {
+          if (bucket1.get(key) instanceof RedisCompatibilityHash) {
 
-            RedisHash value1 = (RedisHash) bucket1.get(key);
-            RedisHash value2 = (RedisHash) bucket2.get(key);
+            RedisCompatibilityHash value1 = (RedisCompatibilityHash) bucket1.get(key);
+            RedisCompatibilityHash value2 = (RedisCompatibilityHash) bucket2.get(key);
 
             assertThat(getIntFromBytes(value1)).isEqualTo(getIntFromBytes(value2));
           }
@@ -156,12 +156,13 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
     });
   }
 
-  private static int getIntFromBytes(RedisHash redisHash) {
-    if (redisHash == null) {
+  private static int getIntFromBytes(RedisCompatibilityHash redisCompatibilityHash) {
+    if (redisCompatibilityHash == null) {
       return 0;
     }
     ObjectInputStream inputStream;
-    byte[] bytes = redisHash.hget(new ByteArrayWrapper("maxInactiveInterval".getBytes())).toBytes();
+    byte[] bytes = redisCompatibilityHash
+        .hget(new ByteArrayWrapper("maxInactiveInterval".getBytes())).toBytes();
     ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
     try {
       inputStream = new ObjectInputStream(byteStream);

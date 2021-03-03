@@ -15,24 +15,25 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SELECT;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SelectExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     String dbIndexString = command.getStringKey();
 
     if (!dbIndexString.equals("0")) {
-      return RedisResponse.error(ERROR_SELECT);
+      return RedisCompatibilityResponse.error(ERROR_SELECT);
     }
 
-    return RedisResponse.ok();
+    return RedisCompatibilityResponse.ok();
   }
 
 }

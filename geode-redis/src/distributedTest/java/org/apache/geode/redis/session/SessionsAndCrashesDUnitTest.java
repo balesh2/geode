@@ -42,17 +42,18 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
+import org.apache.geode.redis.session.springRedisCompatibilityTestApplication.RedisCompatibilitySpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SessionsAndCrashesDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
+  public static RedisCompatibilityClusterStartupRule cluster =
+      new RedisCompatibilityClusterStartupRule();
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -107,7 +108,7 @@ public class SessionsAndCrashesDUnitTest {
         "" + redisPorts[1],
         "" + redisPorts[2]};
 
-    springContext = SpringApplication.run(RedisSpringTestApplication.class, args);
+    springContext = SpringApplication.run(RedisCompatibilitySpringTestApplication.class, args);
     sessionRepository = springContext.getBean(SessionRepository.class);
     assertThat(sessionRepository).isNotNull();
   }

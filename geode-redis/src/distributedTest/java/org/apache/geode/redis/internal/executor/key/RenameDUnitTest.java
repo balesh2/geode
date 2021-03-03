@@ -41,12 +41,13 @@ import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityClusterStartupRule;
 
 public class RenameDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(3);
+  public static RedisCompatibilityClusterStartupRule clusterStartUp =
+      new RedisCompatibilityClusterStartupRule(3);
 
   static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =

@@ -18,12 +18,12 @@ package org.apache.geode.redis.internal.executor.connection;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisCompatibilityServerRule;
 
 public class EchoIntegrationTest extends AbstractEchoIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RedisCompatibilityServerRule server = new RedisCompatibilityServerRule();
 
   @Override
   public int getPort() {

@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     int setsStartIndex = 1;
 
@@ -39,43 +39,43 @@ public abstract class SetOpExecutor extends SetExecutor {
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {
       ByteArrayWrapper destination = command.getKey();
-      RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+      RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
       int storeCount;
       switch (command.getCommandType()) {
         case SUNIONSTORE:
-          storeCount = redisSetCommands.sunionstore(destination, setKeys);
+          storeCount = redisCompatibilitySetCommands.sunionstore(destination, setKeys);
           break;
         case SINTERSTORE:
-          storeCount = redisSetCommands.sinterstore(destination, setKeys);
+          storeCount = redisCompatibilitySetCommands.sinterstore(destination, setKeys);
           break;
         case SDIFFSTORE:
-          storeCount = redisSetCommands.sdiffstore(destination, setKeys);
+          storeCount = redisCompatibilitySetCommands.sdiffstore(destination, setKeys);
           break;
         default:
           throw new IllegalStateException(
               "expected a set store command but found: " + command.getCommandType());
       }
-      return RedisResponse.integer(storeCount);
+      return RedisCompatibilityResponse.integer(storeCount);
     } else {
       return doActualSetOperation(context, setKeys);
     }
   }
 
-  private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
+  private RedisCompatibilityResponse doActualSetOperation(ExecutionHandlerContext context,
       ArrayList<ByteArrayWrapper> setKeys) {
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
     ByteArrayWrapper firstSetKey = setKeys.remove(0);
-    Set<ByteArrayWrapper> resultSet = redisSetCommands.smembers(firstSetKey);
+    Set<ByteArrayWrapper> resultSet = redisCompatibilitySetCommands.smembers(firstSetKey);
 
     for (ByteArrayWrapper key : setKeys) {
-      Set<ByteArrayWrapper> nextSet = redisSetCommands.smembers(key);
+      Set<ByteArrayWrapper> nextSet = redisCompatibilitySetCommands.smembers(key);
       if (doSetOp(resultSet, nextSet)) {
         break;
       }
     }
 
     if (resultSet.isEmpty()) {
-      return RedisResponse.emptyArray();
+      return RedisCompatibilityResponse.emptyArray();
     } else {
       return respondBulkStrings(resultSet);
     }

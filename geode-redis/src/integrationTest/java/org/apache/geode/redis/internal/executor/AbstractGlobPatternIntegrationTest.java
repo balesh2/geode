@@ -23,9 +23,9 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractGlobPatternIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractGlobPatternIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =

@@ -16,17 +16,17 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
-import static org.apache.geode.redis.internal.data.RedisHash.NULL_REDIS_HASH;
-import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityDataType.REDIS_HASH;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityDataType.REDIS_STRING;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityHash.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.RedisCompatibilitySet.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisCompatibilityString.NULL_REDIS_STRING;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
 /**
  * Provides methods to help implement command execution.
@@ -39,15 +39,15 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  * to prevent garbage creation.
  */
 public class CommandHelper {
-  private final Region<ByteArrayWrapper, RedisData> region;
-  private final RedisStats redisStats;
+  private final Region<ByteArrayWrapper, RedisCompatibilityData> region;
+  private final NativeRedisStats redisStats;
   private final StripedExecutor stripedExecutor;
 
-  public Region<ByteArrayWrapper, RedisData> getRegion() {
+  public Region<ByteArrayWrapper, RedisCompatibilityData> getRegion() {
     return region;
   }
 
-  public RedisStats getRedisStats() {
+  public NativeRedisStats getRedisStats() {
     return redisStats;
   }
 
@@ -56,20 +56,20 @@ public class CommandHelper {
   }
 
   public CommandHelper(
-      Region<ByteArrayWrapper, RedisData> region,
-      RedisStats redisStats,
+      Region<ByteArrayWrapper, RedisCompatibilityData> region,
+      NativeRedisStats redisStats,
       StripedExecutor stripedExecutor) {
     this.region = region;
     this.redisStats = redisStats;
     this.stripedExecutor = stripedExecutor;
   }
 
-  RedisData getRedisData(ByteArrayWrapper key) {
-    return getRedisData(key, RedisData.NULL_REDIS_DATA);
+  RedisCompatibilityData getRedisData(ByteArrayWrapper key) {
+    return getRedisData(key, RedisCompatibilityData.NULL_REDIS_DATA);
   }
 
-  RedisData getRedisData(ByteArrayWrapper key, RedisData notFoundValue) {
-    RedisData result = region.get(key);
+  RedisCompatibilityData getRedisData(ByteArrayWrapper key, RedisCompatibilityData notFoundValue) {
+    RedisCompatibilityData result = region.get(key);
     if (result != null) {
       if (result.hasExpired()) {
         result.doExpiration(this, key);
@@ -83,8 +83,8 @@ public class CommandHelper {
     }
   }
 
-  RedisSet getRedisSet(ByteArrayWrapper key, boolean updateStats) {
-    RedisData redisData = getRedisData(key, NULL_REDIS_SET);
+  RedisCompatibilitySet getRedisSet(ByteArrayWrapper key, boolean updateStats) {
+    RedisCompatibilityData redisData = getRedisData(key, NULL_REDIS_SET);
     if (updateStats) {
       if (redisData == NULL_REDIS_SET) {
         redisStats.incKeyspaceMisses();
@@ -95,18 +95,19 @@ public class CommandHelper {
     return checkSetType(redisData);
   }
 
-  private RedisSet checkSetType(RedisData redisData) {
+  private RedisCompatibilitySet checkSetType(RedisCompatibilityData redisData) {
     if (redisData == null) {
       return null;
     }
     if (redisData.getType() != REDIS_SET) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+      throw new RedisCompatibilityDataTypeMismatchException(
+          RedisCompatibilityConstants.ERROR_WRONG_TYPE);
     }
-    return (RedisSet) redisData;
+    return (RedisCompatibilitySet) redisData;
   }
 
-  RedisHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
-    RedisData redisData = getRedisData(key, NULL_REDIS_HASH);
+  RedisCompatibilityHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
+    RedisCompatibilityData redisData = getRedisData(key, NULL_REDIS_HASH);
     if (updateStats) {
       if (redisData == NULL_REDIS_HASH) {
         redisStats.incKeyspaceMisses();
@@ -117,17 +118,19 @@ public class CommandHelper {
     return checkHashType(redisData);
   }
 
-  private RedisHash checkHashType(RedisData redisData) {
+  private RedisCompatibilityHash checkHashType(RedisCompatibilityData redisData) {
     if (redisData == null) {
       return null;
     }
     if (redisData.getType() != REDIS_HASH) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+      throw new RedisCompatibilityDataTypeMismatchException(
+          RedisCompatibilityConstants.ERROR_WRONG_TYPE);
     }
-    return (RedisHash) redisData;
+    return (RedisCompatibilityHash) redisData;
   }
 
-  private RedisString checkStringType(RedisData redisData, boolean ignoreTypeMismatch) {
+  private RedisCompatibilityString checkStringType(RedisCompatibilityData redisData,
+      boolean ignoreTypeMismatch) {
     if (redisData == null) {
       return null;
     }
@@ -135,13 +138,14 @@ public class CommandHelper {
       if (ignoreTypeMismatch) {
         return NULL_REDIS_STRING;
       }
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+      throw new RedisCompatibilityDataTypeMismatchException(
+          RedisCompatibilityConstants.ERROR_WRONG_TYPE);
     }
-    return (RedisString) redisData;
+    return (RedisCompatibilityString) redisData;
   }
 
-  RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
-    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
+  RedisCompatibilityString getRedisString(ByteArrayWrapper key, boolean updateStats) {
+    RedisCompatibilityData redisData = getRedisData(key, NULL_REDIS_STRING);
     if (updateStats) {
       if (redisData == NULL_REDIS_STRING) {
         redisStats.incKeyspaceMisses();
@@ -153,8 +157,8 @@ public class CommandHelper {
     return checkStringType(redisData, false);
   }
 
-  RedisString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
-    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
+  RedisCompatibilityString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
+    RedisCompatibilityData redisData = getRedisData(key, NULL_REDIS_STRING);
     if (updateStats) {
       if (redisData == NULL_REDIS_STRING) {
         redisStats.incKeyspaceMisses();
@@ -166,14 +170,14 @@ public class CommandHelper {
     return checkStringType(redisData, true);
   }
 
-  RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
-    RedisString result;
-    RedisData redisData = getRedisData(key);
+  RedisCompatibilityString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
+    RedisCompatibilityString result;
+    RedisCompatibilityData redisData = getRedisData(key);
 
     if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
-      result = new RedisString(value);
+      result = new RedisCompatibilityString(value);
     } else {
-      result = (RedisString) redisData;
+      result = (RedisCompatibilityString) redisData;
       result.set(value);
     }
     region.put(key, result);

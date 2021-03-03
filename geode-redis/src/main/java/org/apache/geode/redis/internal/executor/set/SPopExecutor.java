@@ -18,14 +18,14 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SPopExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -38,17 +38,17 @@ public class SPopExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
+    RedisCompatibilitySetCommands redisCompatibilitySetCommands = createRedisSetCommands(context);
+    Collection<ByteArrayWrapper> popped = redisCompatibilitySetCommands.spop(key, popCount);
 
     if (popped.isEmpty() && !isCountPassed) {
-      return RedisResponse.nil();
+      return RedisCompatibilityResponse.nil();
     }
 
     if (!isCountPassed) {
-      return RedisResponse.bulkString(popped.iterator().next().toString());
+      return RedisCompatibilityResponse.bulkString(popped.iterator().next().toString());
     }
 
-    return RedisResponse.array(popped);
+    return RedisCompatibilityResponse.array(popped);
   }
 }

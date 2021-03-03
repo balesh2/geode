@@ -22,7 +22,7 @@ import io.netty.channel.ChannelFuture;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -96,8 +96,8 @@ public abstract class AbstractSubscription implements Subscription {
     return this.client.equals(client);
   }
 
-  private RedisResponse constructResponse(byte[] channel, byte[] message) {
-    return RedisResponse.array(createResponse(channel, message));
+  private RedisCompatibilityResponse constructResponse(byte[] channel, byte[] message) {
+    return RedisCompatibilityResponse.array(createResponse(channel, message));
   }
 
   /**
@@ -105,7 +105,8 @@ public abstract class AbstractSubscription implements Subscription {
    * client has disconnected and the write fails. In such cases we need to be able to notify the
    * caller.
    */
-  private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
+  private void writeToChannel(RedisCompatibilityResponse response,
+      PublishResultCollector resultCollector) {
 
     ChannelFuture result = context.writeToChannel(response)
         .syncUninterruptibly();

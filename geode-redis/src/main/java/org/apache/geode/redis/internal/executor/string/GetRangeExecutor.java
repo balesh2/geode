@@ -14,12 +14,12 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -30,7 +30,8 @@ public class GetRangeExecutor extends StringExecutor {
   private static final int stopIndex = 3;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     long start;
@@ -42,18 +43,18 @@ public class GetRangeExecutor extends StringExecutor {
       start = Coder.bytesToLong(startI);
       end = Coder.bytesToLong(stopI);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INTEGER);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper key = command.getKey();
 
     ByteArrayWrapper returnRange = stringCommands.getrange(key, start, end);
 
     if (returnRange == null) {
-      return RedisResponse.nil();
+      return RedisCompatibilityResponse.nil();
     } else if (returnRange.length() == 0) {
-      return RedisResponse.emptyString();
+      return RedisCompatibilityResponse.emptyString();
     } else {
       return respondBulkStrings(returnRange);
     }

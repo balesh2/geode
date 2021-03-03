@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -29,7 +29,7 @@ public class BitPosExecutor extends StringExecutor {
   private static final String ERROR_BIT = "The bit must either be a 0 or 1";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
@@ -42,11 +42,11 @@ public class BitPosExecutor extends StringExecutor {
       byte[] bitAr = commandElems.get(2);
       bit = Coder.bytesToInt(bitAr);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INT);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INT);
     }
 
     if (bit != 0 && bit != 1) {
-      return RedisResponse.error(ERROR_BIT);
+      return RedisCompatibilityResponse.error(ERROR_BIT);
     }
 
     if (commandElems.size() > 3) {
@@ -54,7 +54,7 @@ public class BitPosExecutor extends StringExecutor {
         byte[] startAr = commandElems.get(3);
         start = Coder.bytesToInt(startAr);
       } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_INT);
+        return RedisCompatibilityResponse.error(ERROR_NOT_INT);
       }
     }
 
@@ -63,12 +63,12 @@ public class BitPosExecutor extends StringExecutor {
         byte[] endAr = commandElems.get(4);
         end = Coder.bytesToInt(endAr);
       } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_INT);
+        return RedisCompatibilityResponse.error(ERROR_NOT_INT);
       }
     }
 
     int bitPosition = getRedisStringCommands(context).bitpos(key, bit, start, end);
-    return RedisResponse.integer(bitPosition);
+    return RedisCompatibilityResponse.integer(bitPosition);
   }
 
 }

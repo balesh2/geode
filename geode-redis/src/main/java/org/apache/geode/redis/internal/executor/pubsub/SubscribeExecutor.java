@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.SubscribeResult;
@@ -29,7 +29,7 @@ import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 public class SubscribeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     context.eventLoopReady();
@@ -69,7 +69,7 @@ public class SubscribeExecutor extends AbstractExecutor {
       context.changeChannelEventLoopGroup(context.getSubscriberGroup(), innerCallback);
     };
 
-    RedisResponse response = RedisResponse.flattenedArray(items);
+    RedisCompatibilityResponse response = RedisCompatibilityResponse.flattenedArray(items);
     response.setAfterWriteCallback(callback);
 
     return response;

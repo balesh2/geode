@@ -27,7 +27,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -36,7 +36,7 @@ public class KeysExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     String glob = Coder.bytesToString(commandElems.get(1));
@@ -50,7 +50,7 @@ public class KeysExecutor extends AbstractExecutor {
       logger.warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. KEYS will return an empty list.",
           glob, e.getMessage());
-      return RedisResponse.emptyArray();
+      return RedisCompatibilityResponse.emptyArray();
     }
 
     for (ByteArrayWrapper bytesKey : allKeys) {
@@ -61,7 +61,7 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     if (matchingKeys.isEmpty()) {
-      return RedisResponse.emptyArray();
+      return RedisCompatibilityResponse.emptyArray();
     }
 
     return respondBulkStrings(matchingKeys);

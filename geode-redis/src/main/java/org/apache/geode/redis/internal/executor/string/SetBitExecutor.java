@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -33,9 +33,10 @@ public class SetBitExecutor extends StringExecutor {
       "The offset is out of range, must be greater than or equal to 0  and at most 4294967295 (512MB)";
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper key = command.getKey();
 
     long offset;
@@ -46,19 +47,19 @@ public class SetBitExecutor extends StringExecutor {
       offset = Coder.bytesToLong(offAr);
       value = Coder.bytesToInt(valAr);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INT);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INT);
     }
 
     if (value != 0 && value != 1) {
-      return RedisResponse.error(ERROR_VALUE);
+      return RedisCompatibilityResponse.error(ERROR_VALUE);
     }
 
     if (offset < 0 || offset > 4294967295L) {
-      return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
+      return RedisCompatibilityResponse.error(ERROR_ILLEGAL_OFFSET);
     }
 
     int returnBit = stringCommands.setbit(key, offset, value);
 
-    return RedisResponse.integer(returnBit);
+    return RedisCompatibilityResponse.integer(returnBit);
   }
 }

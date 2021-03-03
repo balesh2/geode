@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -31,11 +31,11 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSMoveIntegrationTest implements RedisCompatibilityPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =
@@ -63,11 +63,11 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
   public void testSmove_returnsWrongType_whenWrongSourceIsUsed() {
     jedis.set("a-string", "value");
     assertThatThrownBy(() -> jedis.smove("a-string", "some-set", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.hset("a-hash", "field", "value");
     assertThatThrownBy(() -> jedis.smove("a-hash", "some-set", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -76,11 +76,11 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
 
     jedis.set("a-string", "value");
     assertThatThrownBy(() -> jedis.smove("a-set", "a-string", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
 
     jedis.hset("a-hash", "field", "value");
     assertThatThrownBy(() -> jedis.smove("a-set", "a-hash", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test

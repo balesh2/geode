@@ -16,13 +16,13 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExpireExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
@@ -41,7 +41,7 @@ public class ExpireExecutor extends AbstractExecutor {
     try {
       delay = Coder.bytesToLong(delayByteArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INTEGER);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
     }
 
     if (!timeUnitMillis()) {
@@ -50,11 +50,12 @@ public class ExpireExecutor extends AbstractExecutor {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
-        context.getRegionProvider().getDataRegion());
-    int result = redisKeyCommands.pexpireat(key, timestamp);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands =
+        new RedisCompatibilityKeyCommandsFunctionInvoker(
+            context.getRegionProvider().getDataRegion());
+    int result = redisCompatibilityKeyCommands.pexpireat(key, timestamp);
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 
   /*

@@ -21,7 +21,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.executor.string.IncrByFloatExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -53,24 +53,25 @@ public class HIncrByFloatExecutor extends HashExecutor {
   private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Pair<BigDecimal, RedisResponse> validated =
+    Pair<BigDecimal, RedisCompatibilityResponse> validated =
         IncrByFloatExecutor.validateIncrByFloatArgument(commandElems.get(INCREMENT_INDEX));
     if (validated.getRight() != null) {
       return validated.getRight();
     }
 
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    RedisCompatibilityHashCommands redisCompatibilityHashCommands =
+        createRedisHashCommands(context);
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    BigDecimal value = redisHashCommands.hincrbyfloat(key, field, validated.getLeft());
+    BigDecimal value = redisCompatibilityHashCommands.hincrbyfloat(key, field, validated.getLeft());
 
-    return RedisResponse.bigDecimal(value);
+    return RedisCompatibilityResponse.bigDecimal(value);
   }
 
 }

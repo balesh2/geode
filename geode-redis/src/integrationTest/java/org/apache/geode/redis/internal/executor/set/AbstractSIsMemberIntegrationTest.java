@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
@@ -28,9 +28,9 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractSIsMemberIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSIsMemberIntegrationTest implements RedisCompatibilityPortSupplier {
   private Jedis jedis;
   private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
   private static final int REDIS_CLIENT_TIMEOUT =

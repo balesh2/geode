@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -27,7 +27,8 @@ public class GetBitExecutor extends StringExecutor {
   private static final String ERROR_NOT_INT = "The offset provided must be numeric";
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
@@ -37,12 +38,12 @@ public class GetBitExecutor extends StringExecutor {
       byte[] offAr = commandElems.get(2);
       offset = Coder.bytesToInt(offAr);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INT);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INT);
     }
 
     int result = getRedisStringCommands(context).getbit(key, offset);
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 
 }

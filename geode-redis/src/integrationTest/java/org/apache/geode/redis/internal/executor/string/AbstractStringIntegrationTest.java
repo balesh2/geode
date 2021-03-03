@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.RedisCompatibilityCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,11 +27,11 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractStringIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractStringIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis1;
   private Jedis jedis2;
@@ -79,7 +79,7 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(() -> jedis1.strlen(key))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessageContaining(RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -137,7 +137,7 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(() -> jedis1.decr(key))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessageContaining(RedisCompatibilityConstants.ERROR_WRONG_TYPE);
   }
 
   @Test

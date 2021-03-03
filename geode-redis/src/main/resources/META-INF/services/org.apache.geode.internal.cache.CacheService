@@ -1,1 +1,1 @@
-org.apache.geode.redis.internal.GeodeRedisService
+org.apache.geode.redis.internal.RedisCompatibilityService

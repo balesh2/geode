@@ -16,9 +16,9 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -28,12 +28,12 @@ public class BitCountExecutor extends StringExecutor {
   private static final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
     long result;
 
     if (commandElems.size() == 4) {
@@ -43,14 +43,14 @@ public class BitCountExecutor extends StringExecutor {
         start = Math.toIntExact(Coder.bytesToLong(commandElems.get(2)));
         end = Math.toIntExact(Coder.bytesToLong(commandElems.get(3)));
       } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_INT);
+        return RedisCompatibilityResponse.error(ERROR_NOT_INT);
       } catch (ArithmeticException ex) {
-        return RedisResponse.error(RedisConstants.ERROR_OUT_OF_RANGE);
+        return RedisCompatibilityResponse.error(RedisCompatibilityConstants.ERROR_OUT_OF_RANGE);
       }
       result = stringCommands.bitcount(key, start, end);
     } else {
       result = stringCommands.bitcount(key);
     }
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 }

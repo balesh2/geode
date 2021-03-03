@@ -303,7 +303,8 @@ public class SupportedCommandsJUnitTest {
     allCommands.addAll(asList(internalCommands));
 
     List<String> definedCommands =
-        Arrays.stream(RedisCommandType.values()).map(Enum::name).collect(Collectors.toList());
+        Arrays.stream(RedisCompatibilityCommandType.values()).map(Enum::name)
+            .collect(Collectors.toList());
 
     assertThat(definedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
   }
@@ -319,18 +320,20 @@ public class SupportedCommandsJUnitTest {
     assertThat(internalCommands).containsExactlyInAnyOrderElementsOf(allInternalCommands);
   }
 
-  private List<RedisCommandType> getAllImplementedCommands() {
-    List<RedisCommandType> implementedCommands = new ArrayList<>(asList(RedisCommandType.values()));
-    implementedCommands.removeIf(RedisCommandType::isUnimplemented);
-    implementedCommands.removeIf(RedisCommandType::isInternal);
+  private List<RedisCompatibilityCommandType> getAllImplementedCommands() {
+    List<RedisCompatibilityCommandType> implementedCommands = new ArrayList<>(asList(
+        RedisCompatibilityCommandType.values()));
+    implementedCommands.removeIf(RedisCompatibilityCommandType::isUnimplemented);
+    implementedCommands.removeIf(RedisCompatibilityCommandType::isInternal);
     return implementedCommands;
   }
 
-  private List<RedisCommandType> getAllInternalCommands() {
-    List<RedisCommandType> internalCommands = new ArrayList<>(asList(RedisCommandType.values()));
-    internalCommands.removeIf(RedisCommandType::isUnimplemented);
-    internalCommands.removeIf(RedisCommandType::isSupported);
-    internalCommands.removeIf(RedisCommandType::isUnsupported);
+  private List<RedisCompatibilityCommandType> getAllInternalCommands() {
+    List<RedisCompatibilityCommandType> internalCommands = new ArrayList<>(asList(
+        RedisCompatibilityCommandType.values()));
+    internalCommands.removeIf(RedisCompatibilityCommandType::isUnimplemented);
+    internalCommands.removeIf(RedisCompatibilityCommandType::isSupported);
+    internalCommands.removeIf(RedisCompatibilityCommandType::isUnsupported);
 
     return internalCommands;
   }

@@ -30,11 +30,11 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
+import org.apache.geode.redis.internal.data.RedisCompatibilityKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
 @SuppressWarnings("unchecked")
 public class RenameFunction implements InternalFunction {
@@ -43,21 +43,21 @@ public class RenameFunction implements InternalFunction {
 
   private final transient PartitionedRegion partitionedRegion;
   private final transient CommandHelper commandHelper;
-  private final transient RedisKeyCommandsFunctionExecutor keyCommands;
+  private final transient RedisCompatibilityKeyCommandsFunctionExecutor keyCommands;
 
-  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public static void register(Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
       StripedExecutor stripedExecutor,
-      RedisStats redisStats) {
+      NativeRedisStats redisStats) {
     FunctionService.registerFunction(new RenameFunction(dataRegion, stripedExecutor, redisStats));
   }
 
   public RenameFunction(
-      Region<ByteArrayWrapper, RedisData> dataRegion,
+      Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
       StripedExecutor stripedExecutor,
-      RedisStats redisStats) {
+      NativeRedisStats redisStats) {
     partitionedRegion = (PartitionedRegion) dataRegion;
     commandHelper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
-    keyCommands = new RedisKeyCommandsFunctionExecutor(commandHelper);
+    keyCommands = new RedisCompatibilityKeyCommandsFunctionExecutor(commandHelper);
   }
 
   @Override

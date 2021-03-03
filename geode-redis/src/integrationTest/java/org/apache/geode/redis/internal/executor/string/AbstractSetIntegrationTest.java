@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_INVALID_EXPIRE_TIME;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -36,11 +36,11 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.dunit.rules.RedisCompatibilityPortSupplier;
 
-public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSetIntegrationTest implements RedisCompatibilityPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
@@ -310,7 +310,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
     assertThatThrownBy(() -> jedis.set(key, value, setParams))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+        .hasMessageContaining(RedisCompatibilityConstants.ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
@@ -340,7 +340,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
     assertThatThrownBy(() -> jedis.set(key, value, setParams))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+        .hasMessageContaining(RedisCompatibilityConstants.ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test

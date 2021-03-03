@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.Collection;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -43,13 +43,14 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class HGetAllExecutor extends HashExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    Collection<ByteArrayWrapper> fieldsAndValues = redisHashCommands.hgetall(key);
+    RedisCompatibilityHashCommands redisCompatibilityHashCommands =
+        createRedisHashCommands(context);
+    Collection<ByteArrayWrapper> fieldsAndValues = redisCompatibilityHashCommands.hgetall(key);
 
-    return RedisResponse.array(fieldsAndValues);
+    return RedisCompatibilityResponse.array(fieldsAndValues);
   }
 
 }

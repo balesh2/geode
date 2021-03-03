@@ -16,13 +16,13 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisCompatibilityConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExpireAtExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int TIMESTAMP_INDEX = 2;
@@ -42,17 +42,17 @@ public class ExpireAtExecutor extends AbstractExecutor {
     try {
       timestamp = Coder.bytesToLong(timestampByteArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INTEGER);
+      return RedisCompatibilityResponse.error(ERROR_NOT_INTEGER);
     }
 
     if (!timeUnitMillis()) {
       timestamp = SECONDS.toMillis(timestamp);
     }
 
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
-    int result = redisKeyCommands.pexpireat(wKey, timestamp);
+    RedisCompatibilityKeyCommands redisCompatibilityKeyCommands = getRedisKeyCommands(context);
+    int result = redisCompatibilityKeyCommands.pexpireat(wKey, timestamp);
 
-    return RedisResponse.integer(result);
+    return RedisCompatibilityResponse.integer(result);
   }
 
   protected boolean timeUnitMillis() {

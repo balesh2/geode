@@ -30,21 +30,21 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommands;
+import org.apache.geode.redis.internal.executor.key.RedisCompatibilityKeyCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
-  private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
-  private final RedisStats redisStats;
+  private final NativeRedisStats redisStats;
 
 
-  public PassiveExpirationManager(Region<ByteArrayWrapper, RedisData> dataRegion,
-      RedisStats redisStats) {
+  public PassiveExpirationManager(Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
+      NativeRedisStats redisStats) {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
@@ -59,19 +59,21 @@ public class PassiveExpirationManager {
   }
 
   private void doDataExpiration(
-      Region<ByteArrayWrapper, RedisData> redisData) {
+      Region<ByteArrayWrapper, RedisCompatibilityData> redisData) {
     final long start = redisStats.startPassiveExpirationCheck();
     long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
-      Region<ByteArrayWrapper, RedisData> localPrimaryData =
+      Region<ByteArrayWrapper, RedisCompatibilityData> localPrimaryData =
           PartitionRegionHelper.getLocalPrimaryData(redisData);
-      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(redisData);
-      for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
+      RedisCompatibilityKeyCommands redisCompatibilityKeyCommands =
+          new RedisCompatibilityKeyCommandsFunctionInvoker(redisData);
+      for (Map.Entry<ByteArrayWrapper, RedisCompatibilityData> entry : localPrimaryData
+          .entrySet()) {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
-            if (-2 == redisKeyCommands.internalPttl(entry.getKey())) {
+            if (-2 == redisCompatibilityKeyCommands.internalPttl(entry.getKey())) {
               expireCount++;
             }
           }

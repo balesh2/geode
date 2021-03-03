@@ -19,7 +19,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
 
 public class RegionProvider {
   /**
@@ -28,12 +28,12 @@ public class RegionProvider {
   private static final String REDIS_DATA_REGION = "__REDIS_DATA";
   private static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
 
-  private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion;
   private final Region<String, Object> configRegion;
 
   public RegionProvider(InternalCache cache) {
 
-    InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
+    InternalRegionFactory<ByteArrayWrapper, RedisCompatibilityData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
     redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
@@ -44,7 +44,7 @@ public class RegionProvider {
     configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
   }
 
-  public Region<ByteArrayWrapper, RedisData> getDataRegion() {
+  public Region<ByteArrayWrapper, RedisCompatibilityData> getDataRegion() {
     return dataRegion;
   }
 

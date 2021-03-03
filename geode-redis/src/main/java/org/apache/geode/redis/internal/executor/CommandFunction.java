@@ -25,29 +25,29 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisCompatibilityCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisCompatibilityData;
+import org.apache.geode.redis.internal.data.RedisCompatibilityHashCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisCompatibilityKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisCompatibilitySetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisCompatibilityStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
-import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.redis.internal.statistics.NativeRedisStats;
 
-public class CommandFunction extends SingleResultRedisFunction {
+public class CommandFunction extends SingleResultRedisCompatibilityFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
 
-  private final transient RedisKeyCommandsFunctionExecutor keyCommands;
-  private final transient RedisHashCommandsFunctionExecutor hashCommands;
-  private final transient RedisSetCommandsFunctionExecutor setCommands;
-  private final transient RedisStringCommandsFunctionExecutor stringCommands;
+  private final transient RedisCompatibilityKeyCommandsFunctionExecutor keyCommands;
+  private final transient RedisCompatibilityHashCommandsFunctionExecutor hashCommands;
+  private final transient RedisCompatibilitySetCommandsFunctionExecutor setCommands;
+  private final transient RedisCompatibilityStringCommandsFunctionExecutor stringCommands;
 
-  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public static void register(Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
       StripedExecutor stripedExecutor,
-      RedisStats redisStats) {
+      NativeRedisStats redisStats) {
     FunctionService.registerFunction(new CommandFunction(dataRegion, stripedExecutor, redisStats));
   }
 
@@ -64,15 +64,15 @@ public class CommandFunction extends SingleResultRedisFunction {
     return result;
   }
 
-  public CommandFunction(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public CommandFunction(Region<ByteArrayWrapper, RedisCompatibilityData> dataRegion,
       StripedExecutor stripedExecutor,
-      RedisStats redisStats) {
+      NativeRedisStats redisStats) {
     super(dataRegion);
     CommandHelper helper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
-    keyCommands = new RedisKeyCommandsFunctionExecutor(helper);
-    hashCommands = new RedisHashCommandsFunctionExecutor(helper);
-    setCommands = new RedisSetCommandsFunctionExecutor(helper);
-    stringCommands = new RedisStringCommandsFunctionExecutor(helper);
+    keyCommands = new RedisCompatibilityKeyCommandsFunctionExecutor(helper);
+    hashCommands = new RedisCompatibilityHashCommandsFunctionExecutor(helper);
+    setCommands = new RedisCompatibilitySetCommandsFunctionExecutor(helper);
+    stringCommands = new RedisCompatibilityStringCommandsFunctionExecutor(helper);
   }
 
   @Override
@@ -83,7 +83,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   @Override
   @SuppressWarnings("unchecked")
   protected Object compute(ByteArrayWrapper key, Object[] args) {
-    RedisCommandType command = (RedisCommandType) args[0];
+    RedisCompatibilityCommandType command = (RedisCompatibilityCommandType) args[0];
     switch (command) {
       case DEL:
         return keyCommands.del(key);

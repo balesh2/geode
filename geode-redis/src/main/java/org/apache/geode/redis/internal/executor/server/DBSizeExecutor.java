@@ -16,18 +16,18 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class DBSizeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     int size = context.getRegionProvider().getDataRegion().size();
 
-    return RedisResponse.integer(size);
+    return RedisCompatibilityResponse.integer(size);
   }
 
 }

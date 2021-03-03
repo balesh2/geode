@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -35,33 +35,37 @@ public class IncrByFloatExecutor extends StringExecutor {
       Pattern.compile("[+-]?(inf|infinity)", Pattern.CASE_INSENSITIVE);
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisCompatibilityResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
 
-    Pair<BigDecimal, RedisResponse> validated =
+    Pair<BigDecimal, RedisCompatibilityResponse> validated =
         validateIncrByFloatArgument(commandElems.get(INCREMENT_INDEX));
     if (validated.getRight() != null) {
       return validated.getRight();
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisCompatibilityStringCommands stringCommands = getRedisStringCommands(context);
     BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
 
-    return RedisResponse.bigDecimal(result);
+    return RedisCompatibilityResponse.bigDecimal(result);
   }
 
-  public static Pair<BigDecimal, RedisResponse> validateIncrByFloatArgument(byte[] incrArray) {
+  public static Pair<BigDecimal, RedisCompatibilityResponse> validateIncrByFloatArgument(
+      byte[] incrArray) {
     String doub = Coder.bytesToString(incrArray).toLowerCase();
     if (invalidArgs.matcher(doub).matches()) {
-      return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY));
+      return Pair.of(null,
+          RedisCompatibilityResponse.error(RedisCompatibilityConstants.ERROR_NAN_OR_INFINITY));
     }
 
     BigDecimal increment;
     try {
       increment = Coder.bytesToBigDecimal(incrArray);
     } catch (NumberFormatException e) {
-      return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT));
+      return Pair.of(null,
+          RedisCompatibilityResponse.error(RedisCompatibilityConstants.ERROR_NOT_A_VALID_FLOAT));
     }
 
     return Pair.of(increment, null);

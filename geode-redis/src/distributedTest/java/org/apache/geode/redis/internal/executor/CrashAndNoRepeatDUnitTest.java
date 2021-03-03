@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
+import static org.apache.geode.redis.internal.RedisCompatibilityServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -44,7 +44,7 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.redis.internal.RedisCompatibilityService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -117,7 +117,7 @@ public class CrashAndNoRepeatDUnitTest {
 
   private static int getPort(MemberVM vm) {
     return vm.invoke(() -> ClusterStartupRule.getCache()
-        .getService(GeodeRedisService.class)
+        .getService(RedisCompatibilityService.class)
         .getPort());
   }
 

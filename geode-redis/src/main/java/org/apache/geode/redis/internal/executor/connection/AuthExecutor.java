@@ -18,31 +18,31 @@ package org.apache.geode.redis.internal.executor.connection;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisCompatibilityConstants;
 import org.apache.geode.redis.internal.executor.Executor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.RedisCompatibilityResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class AuthExecutor implements Executor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
+  public RedisCompatibilityResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     byte[] password = context.getAuthPassword();
     if (password == null) {
-      return RedisResponse.error(RedisConstants.ERROR_NO_PASS);
+      return RedisCompatibilityResponse.error(RedisCompatibilityConstants.ERROR_NO_PASS);
     }
 
     boolean correct = Arrays.equals(commandElems.get(1), password);
 
     if (correct) {
       context.setAuthenticationVerified();
-      return RedisResponse.ok();
+      return RedisCompatibilityResponse.ok();
     } else {
-      return RedisResponse.error(RedisConstants.ERROR_INVALID_PWD);
+      return RedisCompatibilityResponse.error(RedisCompatibilityConstants.ERROR_INVALID_PWD);
     }
   }
 
