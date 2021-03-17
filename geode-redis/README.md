@@ -78,12 +78,12 @@ connection, the locator directs the client to one of the least loaded servers.
 
     For example:
     ```commandline
-    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --redis-port=6379
+    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --compatible-with-redis-port=6379
     ```
     * --name: A name you create for your server.
     * --locators: This is the location of the locator you started in step 1. 
     * --server-port: The port that Geode clients connect to.
-    * --redis-port: The port that your Redis client will connect to.
+    * --compatible-with-redis-port: The port that your Compatible with Redis client will connect to.
 
     Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
     commands.  
@@ -104,7 +104,7 @@ make sure you change the `--name=` and `--redis-port=` parameters.
 
 For example: 
    ```commandLine
-   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --redis-port=6380
+   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --compatible-with-redis-port=6380
    ```
 
 ### <a name="shutting-down"></a>Shutting Down 
@@ -148,9 +148,9 @@ start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --redis-port=<redisPort> \
-  --redis-bind-address=<redisBindAddress> \
-  --redis-password=<redisPassword>
+  --compatible-with-redis-port=<redisPort> \
+  --compatible-with-redis-bind-address=<redisBindAddress> \
+  --compatible-with-redis-password=<redisPassword>
 ```
 
 #### <a name="redis-command-status"></a>Redis Command Status [Return to top](#introduction)

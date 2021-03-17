@@ -35,12 +35,12 @@ Use gfsh to start at least one server with a command of the form:
 start server \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --compatibility-with-redis-port=<compatibilityWithRedisPort> \
-  --compatibility-with-redis-bind-address=<compatibilityWithRedisBindAddress> \
-  --compatibility-with-redis-password=<compatibilityWithRedisPassword>
+  --compatible-with-redis-port=<compatibleWithRedisPort> \
+  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
+  --compatible-with-redis-password=<compatibleWithRedisPassword>
 ```
 
-If any of the options `compatibility-with-redis-bind-address`, `compatibility-with-redis-password`, or `compatibility-with-redis-port` are included, a compatible-with-Redis Geode server will be started.
+If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a Geode server compatible with Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
