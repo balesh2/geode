@@ -241,7 +241,7 @@ public class GeodeRedisServerStartupDUnitTest {
   public void startupFailsGivenInvalidBindAddress() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    addIgnoredException("Could not start a Server Compatible with Redis");
+    addIgnoredException("Could not start Server Compatible with Redis");
     assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
         .withProperty(REDIS_PORT, "" + port)
         .withProperty(REDIS_BIND_ADDRESS, "1.1.1.1")

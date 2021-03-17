@@ -1932,15 +1932,15 @@ public interface ConfigurationProperties {
    */
   String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
   /**
-   * The static String definition of the <i>"redis-enabled"</i> property <a
-   * name="redis-enabled"/a>
+   * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
+   * name="compatible-with-redis-enabled"/a>
    * </p>
    * <U>Description</U>: When the default value of false, the Geode's API for Redis compatibility is
    * not available.
    * Set to true to enable the Geode's API for Redis compatibility.</td>
    * </p>
    * <U>Default</U>: false
-   * <td>redis-enabled</td>
+   * <td>compatible-with-redis-enabled</td>
    * <td>When the default value of false, the <%=vars.product_name%> API for compatibility with
    * Redis is not available.
    * Set to true to enable the <%=vars.product_name%> API for compatibility with Redis.</td>
@@ -1949,7 +1949,7 @@ public interface ConfigurationProperties {
    * </tr>
    * </p>
    */
-  String REDIS_ENABLED = "redis-enabled";
+  String REDIS_ENABLED = "compatible-with-redis-enabled";
   /**
    * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
    * name="compatible-with-redis-password"/a>
