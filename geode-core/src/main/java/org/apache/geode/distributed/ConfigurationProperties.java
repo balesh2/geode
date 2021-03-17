@@ -1924,9 +1924,9 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
    * name="compatible-with-redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the address on which the Redis API for Geode is listening. If set
-   * to the empty string or this property is not specified, the server listens on all local
-   * addresses.
+   * <U>Description</U>: Specifies the address on which Geode's API for Redis Compatibility is
+   * listening. If set to the empty string or this property is not specified, the server listens on
+   * all local addresses.
    * </p>
    * <U>Default</U>: ""
    */
@@ -1935,14 +1935,15 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-enabled"</i> property <a
    * name="redis-enabled"/a>
    * </p>
-   * <U>Description</U>: When the default value of false, the Redis API for Geode is not available.
-   * Set to true to enable the Redis API for Geode.</td>
+   * <U>Description</U>: When the default value of false, the Geode's API for Redis compatibility is
+   * not available.
+   * Set to true to enable the Geode's API for Redis compatibility.</td>
    * </p>
    * <U>Default</U>: false
    * <td>redis-enabled</td>
-   * <td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.
-   * Set
-   * to true to enable the Redis API for <%=vars.product_name%>.</td>
+   * <td>When the default value of false, the <%=vars.product_name%> API for compatibility with
+   * Redis is not available.
+   * Set to true to enable the <%=vars.product_name%> API for compatibility with Redis.</td>
    * <td>S</td>
    * <td>false</td>
    * </tr>

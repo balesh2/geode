@@ -48,7 +48,7 @@ public class DUnitSocketAddressResolver extends SocketAddressResolver {
     int redisPort =
         Integer.parseInt(redisPorts[indexOfLastRedisPortReturned++ % redisPorts.length]);
 
-    logger.info("Redis client creating connection to port " + redisPort);
+    logger.info("Compatible with Redis Client creating connection to port " + redisPort);
 
     return InetSocketAddress.createUnresolved(
         "127.0.0.1",

@@ -36,7 +36,8 @@ public class RedisCommandFunction extends CliFunction<Boolean> {
     InternalCache cache = (InternalCache) context.getCache();
 
     if (!cache.getInternalDistributedSystem().getConfig().getRedisEnabled()) {
-      return new CliFunctionResult(context.getMemberName(), false, "Error: Redis is not enabled");
+      return new CliFunctionResult(context.getMemberName(), false,
+          "Error: Compatibility with Redis is not enabled");
     }
 
     GeodeRedisService geodeRedisService = cache.getService(GeodeRedisService.class);
