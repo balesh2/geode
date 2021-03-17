@@ -41,8 +41,8 @@ public class SSLTest {
   @ClassRule
   public static ServerStarterRule sslEnabledServer = new ServerStarterRule()
       .withSSL("server", true, true)
-      .withProperty("redis-bind-address", "localhost")
-      .withProperty("redis-port", "11211")
+      .withProperty("compatible-with-redis-bind-address", "localhost")
+      .withProperty("compatible-with-redis-port", "11211")
       .withProperty("redis-enabled", "true")
       .withAutoStart();
 

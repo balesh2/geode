@@ -1921,8 +1921,8 @@ public interface ConfigurationProperties {
    */
   String OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
   /**
-   * The static String definition of the <i>"redis-bind-address"</i> property <a
-   * name="redis-bind-address"/a>
+   * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
+   * name="compatible-with-redis-bind-address"/a>
    * </p>
    * <U>Description</U>: Specifies the address on which the Redis API for Geode is listening. If set
    * to the empty string or this property is not specified, the server listens on all local
@@ -1930,7 +1930,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""
    */
-  String REDIS_BIND_ADDRESS = "redis-bind-address";
+  String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
   /**
    * The static String definition of the <i>"redis-enabled"</i> property <a
    * name="redis-enabled"/a>
@@ -1950,17 +1950,18 @@ public interface ConfigurationProperties {
    */
   String REDIS_ENABLED = "redis-enabled";
   /**
-   * The static String definition of the <i>"redis-password"</i> property <a
-   * name="redis-password"/a>
+   * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
+   * name="compatible-with-redis-password"/a>
    * </p>
    * <U>Description</U>: Specifies the password that the server uses when a client attempts to
    * authenticate.
    * </p>
    * <U>Default</U>: no password set
    */
-  String REDIS_PASSWORD = "redis-password";
+  String REDIS_PASSWORD = "compatible-with-redis-password";
   /**
-   * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
+   * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
+   * name="compatible-with-redis-port"/a>
    * </p>
    * <U>Description</U>: Specifies the port on which the server listens for Redis API for Geode
    * connections. A value of 0 selects a random port.</td>
@@ -1969,7 +1970,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Allowed values</U>: 0..65535
    */
-  String REDIS_PORT = "redis-port";
+  String REDIS_PORT = "compatible-with-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
