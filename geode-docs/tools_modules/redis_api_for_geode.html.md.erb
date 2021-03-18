@@ -19,7 +19,7 @@ limitations under the License.
 
 The <%=vars.product_name%> API for Compatibility with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
-<%=vars.product_name%>’s scaling capabilities without changing their client code. Compatible with Redis Clients connect to a <%=vars.product_name%>
+<%=vars.product_name%>’s scaling capabilities without changing their client code. Redis Clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
@@ -27,7 +27,7 @@ optional password authentication.
 
 ## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API Compatible with Redis
 
-The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Compatible with Redis commands.
+The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
 Use gfsh to start at least one server with a command of the form:
 
@@ -62,7 +62,7 @@ Replace `<compatibleWithRedisBindAddress>`,`<compatibleWithRedisPort>`, and `<co
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-## <a id="included-commands" class="no-quick-link"></a>Included Compatible with Redis Commands
+## <a id="included-commands" class="no-quick-link"></a>Included Redis Commands
 
 The <%=vars.product_name%> API for Compatibility with Redis currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
@@ -113,9 +113,9 @@ Commands not listed above are **not implemented**.
 
 ## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
-<%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis-compatible clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
+<%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
 
-<%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Compatible with Redis Client.
+<%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis Client.
 
 ## <a id="expiration-accuracy" class="no-quick-link"></a>Expiration Accuracy
 
@@ -133,7 +133,7 @@ data.
 ## <a id="loss-of-connections" class="no-quick-link"></a>Loss of Connections
 
 There are a number of events that might occur within the <%=vars.product_name%> cluster that can result
-in the cluster closing the connection to the Compatible with Redis Client. Losing the connection to the cluster does not
+in the cluster closing the connection to the Redis Client. Losing the connection to the cluster does not
 imply that the server is no longer available.
 
 When the connection is lost, the client should attempt to reconnect to the same server before

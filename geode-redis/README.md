@@ -83,7 +83,7 @@ connection, the locator directs the client to one of the least loaded servers.
     * --name: A name you create for your server.
     * --locators: This is the location of the locator you started in step 1. 
     * --server-port: The port that Geode clients connect to.
-    * --compatible-with-redis-port: The port that your Compatible with Redis client will connect to.
+    * --compatible-with-redis-port: The port that your Redis client will connect to.
 
     Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
     commands.  

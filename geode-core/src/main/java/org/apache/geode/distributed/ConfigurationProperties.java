@@ -1935,18 +1935,14 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
    * name="compatible-with-redis-enabled"/a>
    * </p>
-   * <U>Description</U>: When the default value of false, the Geode's API for Redis compatibility is
+   * <U>Description</U>: When the default value of false, the Geode's API for Redis Compatibility is
    * not available.
-   * Set to true to enable the Geode's API for Redis compatibility.</td>
+   * Set to true to enable the Geode's API for Compatibility with Redis.</td>
    * </p>
    * <U>Default</U>: false
-   * <td>compatible-with-redis-enabled</td>
-   * <td>When the default value of false, the <%=vars.product_name%> API for compatibility with
+   * When the default value of false, the Geode API for compatibility with
    * Redis is not available.
-   * Set to true to enable the <%=vars.product_name%> API for compatibility with Redis.</td>
-   * <td>S</td>
-   * <td>false</td>
-   * </tr>
+   * Set to true to enable the Geode API for compatibility with Redis.
    * </p>
    */
   String REDIS_ENABLED = "compatible-with-redis-enabled";
