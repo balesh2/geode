@@ -1924,7 +1924,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
    * name="compatible-with-redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the address on which Geode's API for Redis Compatibility is
+   * <U>Description</U>: Specifies the address on which Geode APIs Compatible with Redis is
    * listening. If set to the empty string or this property is not specified, the server listens on
    * all local addresses.
    * </p>
@@ -1935,14 +1935,13 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
    * name="compatible-with-redis-enabled"/a>
    * </p>
-   * <U>Description</U>: When the default value of false, the Geode's API for Redis Compatibility is
+   * <U>Description</U>: When the default value of false, the Geode APIs Compatible with Redis is
    * not available.
-   * Set to true to enable the Geode's API for Compatibility with Redis.</td>
+   * Set to true to enable the Geode APIs Compatible with Redis.</td>
    * </p>
    * <U>Default</U>: false
-   * When the default value of false, the Geode API for compatibility with
-   * Redis is not available.
-   * Set to true to enable the Geode API for compatibility with Redis.
+   * When the default value of false, the Geode API Compatible with Redis is not available.
+   * Set to true to enable the Geode APIs Compatible with Redis.
    * </p>
    */
   String REDIS_ENABLED = "compatible-with-redis-enabled";
