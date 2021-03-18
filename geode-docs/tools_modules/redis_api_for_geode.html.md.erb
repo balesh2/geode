@@ -46,7 +46,7 @@ Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
 
-Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server listens on for Redis-compatible commands. The typical port used with a Redis-compatible cluster is 6379.
+Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
 
 Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
 
@@ -64,7 +64,7 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 ## <a id="included-commands" class="no-quick-link"></a>Included Redis Commands
 
-The <%=vars.product_name%> API for Compatibility with Redis currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
+The <%=vars.product_name%> API for Compatibility with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 **Note**: These commands are supported for Redis 5.
 **Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
@@ -78,7 +78,7 @@ The <%=vars.product_name%> API for Compatibility with Redis currently supports t
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
-The following <%=vars.product_name%> API for Compatibility with Redis commands are **unsupported**. Unsupported
+The following Redis commands are **unsupported** by <%=vars.produce_name%>'s API for Compatibility with Redis. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
 exactly as expected.
 
