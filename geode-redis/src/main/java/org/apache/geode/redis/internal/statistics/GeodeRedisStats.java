@@ -72,7 +72,7 @@ public class GeodeRedisStats {
 
     type = statisticsTypeFactory
         .createType("RedisStats",
-            "Statistics for a Geode Compatible with Redis Server",
+            "Statistics for a Geode server compatible with Redis",
             descriptorArray);
 
     fillCompletedIdMap(type);

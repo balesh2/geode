@@ -105,7 +105,7 @@ if [ ${SERVER_TYPE} == "geode" ]; then
           --compatible-with-redis-bind-address=127.0.0.1"
 else
   if [ ${SERVER_NOT_FOUND} -eq 1 ]; then
-    echo "No Server Compatible with Redis detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"
+    echo "No server compatible with Redis detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"
     exit 1
   fi
 fi

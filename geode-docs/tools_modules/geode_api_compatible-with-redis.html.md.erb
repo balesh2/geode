@@ -19,7 +19,7 @@ limitations under the License.
 
 The <%=vars.product_name%> APIs Compatible with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
-<%=vars.product_name%>’s scaling capabilities without changing their client code. Redis Clients connect to a <%=vars.product_name%>
+<%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
@@ -115,7 +115,7 @@ Commands not listed above are **not implemented**.
 
 <%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
 
-<%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis Client.
+<%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.
 
 ## <a id="expiration-accuracy" class="no-quick-link"></a>Expiration Accuracy
 
@@ -133,12 +133,12 @@ data.
 ## <a id="loss-of-connections" class="no-quick-link"></a>Loss of Connections
 
 There are a number of events that might occur within the <%=vars.product_name%> cluster that can result
-in the cluster closing the connection to the Redis Client. Losing the connection to the cluster does not
+in the cluster closing the connection to the Redis client. Losing the connection to the cluster does not
 imply that the server is no longer available.
 
 When the connection is lost, the client should attempt to reconnect to the same server before
 attempting to connect to another server.
-The Redis Compatiblity Client is responsible for knowing the addresses of all servers.
+The Redis client is responsible for knowing the addresses of all servers.
 
 In the case of a connection failure, an invoked command may or may not complete.
-The Compatible with Redis Client is responsible for deciding if the command should be retried.
+The Redis client is responsible for deciding if the command should be retried.

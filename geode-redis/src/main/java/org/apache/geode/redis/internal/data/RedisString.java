@@ -650,7 +650,7 @@ public class RedisString extends AbstractRedisData {
       } else if (appendDeltaInfo.getSequence() != appendSequence) {
         // Exceptional case should never happen
         throw new RuntimeException(
-            "Compatibility with Redis APPEND sequence mismatch - delta sequence number: "
+            "APPEND sequence mismatch - delta sequence number: "
                 + appendDeltaInfo.getSequence() + " current sequence number: " + appendSequence);
       }
     }

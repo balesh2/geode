@@ -281,7 +281,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private void executeCommand(Command command) {
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Executing Compatible with Redis command: {} - {}", command,
+        logger.debug("Executing Redis command: {} - {}", command,
             channel.remoteAddress().toString());
       }
 
@@ -326,7 +326,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         channelInactive(command.getChannelHandlerContext());
       }
     } catch (Exception e) {
-      logger.warn("Execution of Compatibility with Redis command {} failed: {}", command, e);
+      logger.warn("Execution Redis command {} failed: {}", command, e);
       throw e;
     }
   }
@@ -349,10 +349,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
       if (cause == null) {
-        logger.debug("Compatible with Redis Command returned: {} - {}",
+        logger.debug("Redis command returned: {} - {}",
             Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
       } else {
-        logger.debug("Compatible with Redis Command FAILED to return: {} - {}",
+        logger.debug("Redis command FAILED to return: {} - {}",
             Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
       }
     }
