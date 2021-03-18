@@ -17,15 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-The <%=vars.product_name%> APIs Compatible with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
+The <%=vars.product_name%> APIs compatible with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
 <%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
-<img src="../images/geode_api_compatible-with-redis.png" class="image" />
+<img src="../images/geode_api_compatible_with_redis.png" class="image" />
 
-## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API Compatible with Redis
+## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
@@ -62,9 +62,9 @@ Replace `<compatibleWithRedisBindAddress>`,`<compatibleWithRedisPort>`, and `<co
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-## <a id="included-commands" class="no-quick-link"></a>Included Redis Commands
+## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
-The <%=vars.product_name%> APIs Compatible with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
+The <%=vars.product_name%> APIs compatible with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 **Note**: These commands are supported for Redis 5.
 **Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
@@ -78,7 +78,7 @@ The <%=vars.product_name%> APIs Compatible with Redis currently supports the fol
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
-The following Redis commands are **unsupported** by <%=vars.produce_name%>'s APIs Compatible with Redis. Unsupported
+The following Redis commands are **unsupported** by <%=vars.produce_name%>'s APIs compatible with Redis. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
 exactly as expected.
 
@@ -90,7 +90,7 @@ exactly as expected.
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECRBY, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
 
 
-If you already have some Geode servers running with Redis compatibility enabled, you can execute the
+If you already have some Geode servers running that are compatible with Redis, you can execute the
 following command with gfsh to enable unsupported commands:
 
 ```pre
