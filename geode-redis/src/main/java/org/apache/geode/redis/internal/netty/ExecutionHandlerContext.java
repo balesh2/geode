@@ -326,7 +326,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         channelInactive(command.getChannelHandlerContext());
       }
     } catch (Exception e) {
-      logger.warn("Execution Redis command {} failed: {}", command, e);
+      logger.warn("Execution of Redis command {} failed: {}", command, e);
       throw e;
     }
   }

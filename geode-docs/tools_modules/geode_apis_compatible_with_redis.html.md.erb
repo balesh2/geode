@@ -40,7 +40,7 @@ start server \
   --compatible-with-redis-password=<compatibleWithRedisPassword>
 ```
 
-If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a Geode server compatible with Redis will be started.
+If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a <%=vars.product_name%> server compatible with Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
@@ -67,7 +67,7 @@ If the server is functioning properly, you should see a response of `PONG`.
 The <%=vars.product_name%> APIs compatible with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 **Note**: These commands are supported for Redis 5.
-**Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
+**Note**: SLOWLOG is implemented as a NoOp for compatibility with some monitoring tools.
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS

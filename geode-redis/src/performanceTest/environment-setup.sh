@@ -55,7 +55,7 @@ while getopts ":f:rgt:c:h:p:" opt; do
 done
 
 if [ -z ${SERVER_TYPE} ]; then
-  echo "Please specify native Redis (-r) or Geode Redis (-g)"
+  echo "Please specify native Redis (-r) or Geode APIs compatible with Redis (-g)"
   exit 1
 fi
 
