@@ -163,17 +163,22 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
-    hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length());
-    return hash.put(field, value);
+    ByteArrayWrapper oldvalue = hash.put(field, value);
+    if (oldvalue == null) {
+      hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length());
+    } else {
+      hashSize.addAndGet(value.length() - oldvalue.length());
+    }
+    return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
                                                         ByteArrayWrapper value) {
-    ByteArrayWrapper result = hash.putIfAbsent(field, value);
-    if (result == null) {
+    ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
+    if (oldvalue == null) {
       hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length());
     }
-    return result;
+    return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {

@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -43,6 +44,11 @@ public class PartitionedRegionStatsUpdateTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private static Jedis jedis1;
+  public static final String STRING_KEY = "string key";
+  public static final String SET_KEY = "set key";
+  public static final String HASH_KEY = "hash key";
+  public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
+  public static final String FIELD = "field";
 
   @BeforeClass
   public static void classSetup() {
@@ -59,17 +65,21 @@ public class PartitionedRegionStatsUpdateTest {
     server2 = clusterStartUpRule.startRedisVM(2, locatorPort);
   }
 
+  @Before
+  public void setup() {
+    jedis1.flushAll();
+  }
+
   @Test
   public void should_showIncreaseInDatastoreBytesInUse_givenStringValueSizeIncreases() {
-    String KEY = "key";
     String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
-    jedis1.set(KEY, "value");
+    jedis1.set(STRING_KEY, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.append(KEY, LONG_APPEND_VALUE);
+      jedis1.append(STRING_KEY, LONG_APPEND_VALUE);
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -78,15 +88,58 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  public void should_showDecreaseInDatastoreBytesInUse_givenStringValueDeleted() {
+    jedis1.set(STRING_KEY, "value");
+
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    jedis1.del(STRING_KEY);
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isLessThan(initialDataStoreBytesInUse);
+  }
+
+  @Test
+  public void should_showDecreaseInDatastoreBytesInUse_givenStringValueShortened() {
+    jedis1.set(STRING_KEY, "longer value");
+
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    jedis1.set(STRING_KEY, "value");
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isLessThan(initialDataStoreBytesInUse);
+  }
+
+  @Test
+  public void should_resetMemoryUsage_givenFlushAllCommand() {
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(initialDataStoreBytesInUse).isEqualTo(0L);
+
+    jedis1.set(STRING_KEY, "value");
+
+    jedis1.flushAll();
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+  }
+
+  @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenStringValueSizeDoesNotIncreases() {
-    String KEY = "key";
-    jedis1.set(KEY, "value");
+    jedis1.set(STRING_KEY, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.set(KEY, "value");
+      jedis1.set(STRING_KEY, "value");
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -96,14 +149,11 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showIncreaseInDatastoreBytesInUse_givenSetValueSizeIncreases() {
-    String SETKEY = "setkey";
-    jedis1.sadd(SETKEY, "value");
-
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.sadd(SETKEY, "value" + i);
+      jedis1.sadd(SET_KEY, "value" + i);
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -113,15 +163,16 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenSetValueSizeDoesNotIncreases() {
-    String SETKEY = "setkey";
-    jedis1.sadd(SETKEY, "value");
+    jedis1.sadd(SET_KEY, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.sadd(SETKEY, "value");
+      jedis1.sadd(SET_KEY, "value");
     }
+
+    assertThat(jedis1.scard(SET_KEY)).isEqualTo(1);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
@@ -129,17 +180,45 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  public void should_showDecreaseInDatastoreBytesInUse_givenSetValueDeleted() {
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    jedis1.sadd(SET_KEY, "value");
+    jedis1.del(SET_KEY);
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+  }
+
+  @Test
+  public void should_showDecreaseInDatastoreBytesInUse_givenSetValueSizeDecreases() {
+    for (int i = 0; i < 10; i++) {
+      jedis1.sadd(SET_KEY, "value" + i);
+    }
+
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    for (int i = 0; i < 10; i++) {
+      jedis1.srem(SET_KEY, "value" + i);
+    }
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isLessThan(initialDataStoreBytesInUse);
+  }
+
+  @Test
   public void should_showIncreaseInDatastoreBytesInUse_givenHashValueSizeIncreases() {
-    String HASHKEY = "hashkey";
-    String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
-    String FIELD = "field";
-    jedis1.hset(HASHKEY, FIELD, "value");
+    jedis1.hset(HASH_KEY, FIELD, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.hset(HASHKEY, FIELD + i, LONG_APPEND_VALUE);
+      jedis1.hset(HASH_KEY, FIELD + i, LONG_APPEND_VALUE);
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -149,16 +228,13 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_ShowNoIncreaseInDatastoreBytesInUse_givenHashValueSizeDoesNotIncrease() {
-    String HASHKEY = "hashkey";
-    String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
-    String FIELD = "field";
-    jedis1.hset(HASHKEY, FIELD, "value");
+    jedis1.hset(HASH_KEY, FIELD, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.hsetnx(HASHKEY, FIELD, LONG_APPEND_VALUE);
+      jedis1.hsetnx(HASH_KEY, FIELD, LONG_APPEND_VALUE);
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -167,16 +243,45 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  public void should_showDecreaseInDatastoreBytesInUse_givenHashValueDeleted() {
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    jedis1.hset(HASH_KEY, FIELD, "value");
+    jedis1.del(HASH_KEY);
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+  }
+
+  @Test
+  public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
+    jedis1.hset(HASH_KEY, FIELD, "value");
+
+    long initialDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    for (int i = 0; i < 10; i++) {
+      jedis1.hset(HASH_KEY, FIELD, "value");
+    }
+
+    assertThat(jedis1.hgetAll(HASH_KEY).size()).isEqualTo(1);
+
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+  }
+
+  @Test
   public void should_showIncreaseInDatastoreBytesInUse_givenHSetNXIncreasesHashSize() {
-    String HASHKEY = "hashkey";
-    String FIELD = "field";
-    jedis1.hset(HASHKEY, FIELD, "value");
+    jedis1.hset(HASH_KEY, FIELD, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.hsetnx(HASHKEY, FIELD + i, "value");
+      jedis1.hsetnx(HASH_KEY, FIELD + i, "value");
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -186,15 +291,13 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetNXDoesNotIncreaseHashSize() {
-    String HASHKEY = "hashkey";
-    String FIELD = "field";
-    jedis1.hset(HASHKEY, FIELD, "value");
+    jedis1.hset(HASH_KEY, FIELD, "value");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     for (int i = 0; i < 1000; i++) {
-      jedis1.hsetnx(HASHKEY, FIELD, "value");
+      jedis1.hsetnx(HASH_KEY, FIELD, "value");
     }
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
