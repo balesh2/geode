@@ -49,7 +49,7 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 public class RedisSet extends AbstractRedisData {
 
   private HashSet<ByteArrayWrapper> members;
-  private AtomicInteger setSize = new AtomicInteger();
+  private AtomicInteger setSize = new AtomicInteger(PER_OBJECT_OVERHEAD);
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
