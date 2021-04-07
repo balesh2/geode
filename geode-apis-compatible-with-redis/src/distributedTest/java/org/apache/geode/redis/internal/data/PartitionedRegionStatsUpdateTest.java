@@ -47,6 +47,7 @@ public class PartitionedRegionStatsUpdateTest {
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private static Jedis jedis1;
+  private static Jedis jedis2;
   public static final String STRING_KEY = "string key";
   public static final String SET_KEY = "set key";
   public static final String HASH_KEY = "hash key";
@@ -68,6 +69,8 @@ public class PartitionedRegionStatsUpdateTest {
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
 
     server2 = clusterStartUpRule.startRedisVM(2, locatorPort);
+    int redisServerPort2 = clusterStartUpRule.getRedisPort(1);
+    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
   }
 
   @Before
@@ -261,25 +264,28 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
+  public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize()
+      throws InterruptedException {
 //    logger.info("first log message: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
-    jedis1.hset(HASH_KEY, FIELD, "value");
+    jedis2.hset(HASH_KEY, FIELD, "initialvalue");
+    jedis2.hset(HASH_KEY, FIELD, "value");
 
 //    logger.info("expected value: " + (16  + FIELD.getBytes().length * 2 + "value".getBytes().length * 2));
 
+    Thread.sleep(100);
     long initialDataStoreBytesInUse =
-        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
     logger.info("initialSize: " + initialDataStoreBytesInUse);
 
     for (int i = 0; i < 10; i++) {
-//      logger.info("in loop "+i +":" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
-      jedis1.hset(HASH_KEY, FIELD, "value");
+      logger.info("in loop "+i +":" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
+      jedis2.hset(HASH_KEY, FIELD, "value");
     }
 
 //    logger.info("size after loop: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
-    assertThat(jedis1.hgetAll(HASH_KEY).size()).isEqualTo(1);
+    assertThat(jedis2.hgetAll(HASH_KEY).size()).isEqualTo(1);
 
-    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }

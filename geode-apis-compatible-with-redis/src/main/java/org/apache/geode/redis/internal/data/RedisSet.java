@@ -201,6 +201,7 @@ public class RedisSet extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     InternalDataSerializer.writeHashSet(members, out);
+    InternalDataSerializer.writeInteger(setSize.get(), out);
   }
 
   @Override
@@ -208,6 +209,7 @@ public class RedisSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     members = InternalDataSerializer.readHashSet(in);
+    setSize.set(InternalDataSerializer.readInteger(in));
   }
 
   @Override

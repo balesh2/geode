@@ -150,7 +150,9 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
+    logger.info("starting toData");
     DataSerializer.writeHashMap(hash, out);
+    DataSerializer.writeInteger(hashSize.get(), out);
   }
 
   @Override
@@ -159,6 +161,7 @@ public class RedisHash extends AbstractRedisData {
     logger.info("starting fromData");
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
+    hashSize.set(DataSerializer.readInteger(in));
   }
 
   @Override
@@ -531,6 +534,8 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return hashSize.get();
+    int size = hashSize.get();
+    logger.info("hash getSizeInBytes called:" + size);
+    return size;
   }
 }
