@@ -156,6 +156,7 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
+    logger.info("starting fromData");
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
   }
@@ -169,9 +170,9 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      logger.info( "oldvalue null, got: " + hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length()));
+      logger.info( "oldvalue null, got: " + hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length()) + " field length: " + field.length() + "; value length: " + value.length());
     } else {
-      logger.info( "oldvalue present, got: " + hashSize.addAndGet(value.length() - oldvalue.length()));
+      logger.info( "oldvalue present, got: " + hashSize.addAndGet(value.length() - oldvalue.length()) + " oldValue length: " + oldvalue.length() + "; value length: " + value.length());
     }
     return oldvalue;
   }
@@ -186,7 +187,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    logger.info( "hashRemove, got: " +hashSize.addAndGet(-(2 * PER_OBJECT_OVERHEAD + field.length() + hash.get(field).length())));
+    hashSize.addAndGet(-(2 * PER_OBJECT_OVERHEAD + field.length() + hash.get(field).length()));
     return hash.remove(field);
   }
 
@@ -530,7 +531,6 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    logger.info("Hey, getSizeInBytes actually called");
     return hashSize.get();
   }
 }
