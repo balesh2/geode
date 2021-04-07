@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -49,6 +50,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -69,6 +71,8 @@ public class RedisHash extends AbstractRedisData {
 
   private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
   private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE;
+
+  public static final Logger logger = LogService.getLogger();
 
   @VisibleForTesting
   public RedisHash(List<ByteArrayWrapper> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
@@ -165,9 +169,9 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length());
+      logger.info( "oldvalue null, got: " + hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length()));
     } else {
-      hashSize.addAndGet(value.length() - oldvalue.length());
+      logger.info( "oldvalue present, got: " + hashSize.addAndGet(value.length() - oldvalue.length()));
     }
     return oldvalue;
   }
@@ -182,7 +186,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    hashSize.addAndGet(-(2 * PER_OBJECT_OVERHEAD + field.length() + hash.get(field).length()));
+    logger.info( "hashRemove, got: " +hashSize.addAndGet(-(2 * PER_OBJECT_OVERHEAD + field.length() + hash.get(field).length())));
     return hash.remove(field);
   }
 
@@ -526,6 +530,7 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
+    logger.info("Hey, getSizeInBytes actually called");
     return hashSize.get();
   }
 }

@@ -22,12 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -49,6 +51,8 @@ public class PartitionedRegionStatsUpdateTest {
   public static final String HASH_KEY = "hash key";
   public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   public static final String FIELD = "field";
+
+  public static final Logger logger = LogService.getLogger();
 
   @BeforeClass
   public static void classSetup() {
@@ -257,18 +261,26 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
-    jedis1.hset(HASH_KEY, FIELD, "value");
+    logger.info("starting bytesinuse:" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
+
+    jedis1.hset(HASH_KEY, FIELD, "initialvalue");
+    jedis1.hset(HASH_KEY, FIELD, "finalvalue");
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    logger.info("initial bytesinuse:" + initialDataStoreBytesInUse);
+    logger.info("initial bytesinuse (server 1) :" +
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
 
     for (int i = 0; i < 10; i++) {
-      jedis1.hset(HASH_KEY, FIELD, "value");
+      jedis1.hset(HASH_KEY, FIELD, "finalvalue");
     }
 
     assertThat(jedis1.hgetAll(HASH_KEY).size()).isEqualTo(1);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    logger.info("final bytesinuse:" + finalDataStoreBytesInUse);
+    logger.info("final bytesinuse (server 1):" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
 
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
