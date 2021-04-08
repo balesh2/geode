@@ -50,6 +50,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -61,7 +62,9 @@ public class RedisHash extends AbstractRedisData {
   private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
-  private AtomicInteger hashSize = new AtomicInteger(PER_OBJECT_OVERHEAD);
+  private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 40;
+  private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
+  private AtomicInteger hashSize = new AtomicInteger(PER_HASH_OVERHEAD);
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -72,6 +75,7 @@ public class RedisHash extends AbstractRedisData {
   private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
   private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE;
 
+  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
   public static final Logger logger = LogService.getLogger();
 
   @VisibleForTesting
@@ -171,12 +175,16 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
+    logger.info("reflect, pre-put hash: " + ros.sizeof(hash));
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      logger.info( "oldvalue null, got: " + hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length()) + " field length: " + field.length() + "; value length: " + value.length());
+      logger.info( "oldvalue null, got: " + hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length()) + " field length: " + field.length() + "; value length: " + value.length());
+      logger.info("reflect, field: " + ros.sizeof(field) + " val: " + ros.sizeof(value));
     } else {
       logger.info( "oldvalue present, got: " + hashSize.addAndGet(value.length() - oldvalue.length()) + " oldValue length: " + oldvalue.length() + "; value length: " + value.length());
+      logger.info("present reflect, field: " + ros.sizeof(field) + " val: " + ros.sizeof(value));
     }
+    logger.info("reflect, post-put hash: " + ros.sizeof(hash));
     return oldvalue;
   }
 
@@ -184,13 +192,13 @@ public class RedisHash extends AbstractRedisData {
                                                         ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
     if (oldvalue == null) {
-      hashSize.addAndGet(2 * PER_OBJECT_OVERHEAD + field.length() + value.length());
+      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
     }
     return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    hashSize.addAndGet(-(2 * PER_OBJECT_OVERHEAD + field.length() + hash.get(field).length()));
+    hashSize.addAndGet(-(2 * PER_STRING_OVERHEAD + field.length() + hash.get(field).length()));
     return hash.remove(field);
   }
 
@@ -536,6 +544,9 @@ public class RedisHash extends AbstractRedisData {
   public int getSizeInBytes() {
     int size = hashSize.get();
     logger.info("hash getSizeInBytes called:" + size);
+    int ros_size = ros.sizeof(hash);
+    logger.info("hash getSizeInBytes ros:" + ros_size);
+    logger.info("hash getSizeInBytes ratio:" + ((float)ros_size)/size);
     return size;
   }
 }

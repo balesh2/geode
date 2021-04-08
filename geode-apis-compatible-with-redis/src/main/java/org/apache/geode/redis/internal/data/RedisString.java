@@ -23,11 +23,15 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -35,10 +39,14 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
+  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
+  public static final Logger logger = LogService.getLogger();
 
   private int appendSequence;
 
   private ByteArrayWrapper value;
+
+  private static final int PER_STRING_OVERHEAD = 32;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -732,6 +740,11 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return PER_OBJECT_OVERHEAD + value.length();
+    int size = PER_STRING_OVERHEAD + value.length();
+    logger.info("string getSizeInBytes called:" + size);
+    int ros_size = ros.sizeof(value);
+    logger.info("string getSizeInBytes ros:" + ros_size);
+    logger.info("string getSizeInBytes ratio:" + ((float)ros_size)/size);
+    return size;
   }
 }
