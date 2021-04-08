@@ -50,10 +50,11 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
-
   private HashSet<ByteArrayWrapper> members;
-  private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 64;
+
+  private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
   private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 240;
+
   private AtomicInteger setSize = new AtomicInteger(PER_SET_OVERHEAD);
 
   private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
@@ -226,11 +227,12 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    logger.info("setSize ros pre-add: "+ ros.sizeof(members));
+    logger.info("setSize ros pre-add: " + ros.sizeof(members));
     logger.info("setSize pre-add: " + setSize.get());
     boolean retval = members.add(memberToAdd);
-    logger.info("setSize post-add: " + setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length()));
-    logger.info("setSize ros: "+ ros.sizeof(members));
+    logger
+        .info("setSize post-add: " + setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length()));
+    logger.info("setSize ros: " + ros.sizeof(members));
     return retval;
   }
 
@@ -346,7 +348,7 @@ public class RedisSet extends AbstractRedisData {
     logger.info("set getSizeInBytes called:" + size);
     int ros_size = ros.sizeof(members);
     logger.info("set getSizeInBytes ros:" + ros_size);
-    logger.info("set getSizeInBytes ratio:" + ((float)ros_size)/size);
+    logger.info("set getSizeInBytes ratio:" + ((float) ros_size) / size);
     return size;
   }
 }

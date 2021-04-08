@@ -46,7 +46,7 @@ public class RedisString extends AbstractRedisData {
 
   private ByteArrayWrapper value;
 
-  private static final int PER_STRING_OVERHEAD = 32;
+  public static final int PER_STRING_OVERHEAD = 34;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -744,7 +744,7 @@ public class RedisString extends AbstractRedisData {
     logger.info("string getSizeInBytes called:" + size);
     int ros_size = ros.sizeof(value);
     logger.info("string getSizeInBytes ros:" + ros_size);
-    logger.info("string getSizeInBytes ratio:" + ((float)ros_size)/size);
+    logger.info("string getSizeInBytes ratio:" + ((float) ros_size) / size);
     return size;
   }
 }

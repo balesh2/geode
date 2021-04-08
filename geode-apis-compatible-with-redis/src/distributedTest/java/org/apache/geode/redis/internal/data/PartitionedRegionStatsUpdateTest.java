@@ -20,17 +20,21 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
+import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -55,6 +59,8 @@ public class PartitionedRegionStatsUpdateTest {
   public static final String FIELD = "field";
 
   public static final Logger logger = LogService.getLogger();
+
+  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void classSetup() {
@@ -266,11 +272,13 @@ public class PartitionedRegionStatsUpdateTest {
   @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize()
       throws InterruptedException {
-//    logger.info("first log message: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+    // logger.info("first log message: " +
+    // clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
     jedis2.hset(HASH_KEY, FIELD, "initialvalue");
     jedis2.hset(HASH_KEY, FIELD, "value");
 
-//    logger.info("expected value: " + (16  + FIELD.getBytes().length * 2 + "value".getBytes().length * 2));
+    // logger.info("expected value: " + (16 + FIELD.getBytes().length * 2 +
+    // "value".getBytes().length * 2));
 
     Thread.sleep(100);
     long initialDataStoreBytesInUse =
@@ -278,11 +286,13 @@ public class PartitionedRegionStatsUpdateTest {
     logger.info("initialSize: " + initialDataStoreBytesInUse);
 
     for (int i = 0; i < 10; i++) {
-      logger.info("in loop "+i +":" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
+      logger.info(
+          "in loop " + i + ":" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
       jedis2.hset(HASH_KEY, FIELD, "value");
     }
 
-//    logger.info("size after loop: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+    // logger.info("size after loop: " +
+    // clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
     assertThat(jedis2.hgetAll(HASH_KEY).size()).isEqualTo(1);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -322,7 +332,7 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
-  //confirm that the other member agrees upon size
+  // confirm that the other member agrees upon size
 
   @Test
   public void should_showMembersAgreeUponUsedHashMemory_afterDeltaPropagation() {
@@ -381,4 +391,75 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
+  // confirm our math is right
+
+  @Test
+  public void string_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
+    String value = "value";
+
+    jedis1.set("key2", value);
+
+    Long regionOverhead = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    logger.info("regionOverhead = " + regionOverhead);
+
+    jedis1.set(STRING_KEY, value);
+
+    for (int i = 0; i < 100; i++) {
+      jedis1.append(STRING_KEY, LONG_APPEND_VALUE);
+      value += LONG_APPEND_VALUE;
+      logger.info("intermediate - val: " + ros.sizeof(value.getBytes()) + " rego: " +
+          clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+    }
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    Long expected = ros.sizeof(value.getBytes()) + regionOverhead;
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void set_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
+    String baseValue = "string";
+
+    Set values = new HashSet<ByteArrayWrapper>();
+    values.add(new ByteArrayWrapper(baseValue.getBytes()));
+    jedis1.sadd(SET_KEY, baseValue);
+
+    for (int i = 0; i < 1000; i++) {
+      jedis1.sadd(SET_KEY, baseValue + i);
+      values.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+    }
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    int expected = ros.sizeof(values);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void hash_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
+    String baseValue = "value";
+    String baseField = "field";
+
+    jedis1.hset("key2", "field", baseValue);
+
+    Long regionOverhead = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+
+    HashMap values = new HashMap();
+    values.put(baseField, baseValue);
+    jedis1.hset(HASH_KEY, baseField, baseValue);
+
+    for (int i = 0; i < 100; i++) {
+      jedis1.hset(HASH_KEY, baseField + i, baseValue + i);
+      values.put(baseField + i, baseValue + i);
+    }
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    Long expected = ros.sizeof(values) + regionOverhead;
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
 }
