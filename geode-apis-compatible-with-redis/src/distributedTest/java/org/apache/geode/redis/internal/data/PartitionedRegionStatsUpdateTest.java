@@ -458,6 +458,7 @@ public class PartitionedRegionStatsUpdateTest {
             .collect(Collectors.toSet()));
 
     jedis1.sadd(KEY, members1.toArray(new String[] {}));
+    jedis1.sadd(KEY, "forceDelta");
 
     Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
     int expected = ros.sizeof(localHashSetCopy);
