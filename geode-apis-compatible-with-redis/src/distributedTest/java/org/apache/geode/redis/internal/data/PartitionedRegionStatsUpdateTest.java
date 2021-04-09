@@ -20,13 +20,14 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,7 +36,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -47,18 +47,18 @@ public class PartitionedRegionStatsUpdateTest {
 
   private static MemberVM server1;
   private static MemberVM server2;
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private static Jedis jedis1;
   private static Jedis jedis2;
+
+  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String LOCAL_HOST = "127.0.0.1";
   public static final String STRING_KEY = "string key";
   public static final String SET_KEY = "set key";
   public static final String HASH_KEY = "hash key";
   public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   public static final String FIELD = "field";
-
-  public static final Logger logger = LogService.getLogger();
+  private static final int SET_SIZE = 1000;
 
   private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
 
@@ -270,29 +270,17 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize()
-      throws InterruptedException {
-    // logger.info("first log message: " +
-    // clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+  public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
     jedis2.hset(HASH_KEY, FIELD, "initialvalue");
     jedis2.hset(HASH_KEY, FIELD, "value");
 
-    // logger.info("expected value: " + (16 + FIELD.getBytes().length * 2 +
-    // "value".getBytes().length * 2));
-
-    Thread.sleep(100);
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
-    logger.info("initialSize: " + initialDataStoreBytesInUse);
 
     for (int i = 0; i < 10; i++) {
-      logger.info(
-          "in loop " + i + ":" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
       jedis2.hset(HASH_KEY, FIELD, "value");
     }
 
-    // logger.info("size after loop: " +
-    // clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
     assertThat(jedis2.hgetAll(HASH_KEY).size()).isEqualTo(1);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -400,15 +388,12 @@ public class PartitionedRegionStatsUpdateTest {
     jedis1.set("key2", value);
 
     Long regionOverhead = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    logger.info("regionOverhead = " + regionOverhead);
 
     jedis1.set(STRING_KEY, value);
 
     for (int i = 0; i < 100; i++) {
       jedis1.append(STRING_KEY, LONG_APPEND_VALUE);
       value += LONG_APPEND_VALUE;
-      logger.info("intermediate - val: " + ros.sizeof(value.getBytes()) + " rego: " +
-          clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
     }
 
     Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
@@ -419,6 +404,7 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void set_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
     String baseValue = "string";
 
@@ -439,27 +425,87 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void hash_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
     String baseValue = "value";
     String baseField = "field";
 
-    jedis1.hset("key2", "field", baseValue);
-
-    Long regionOverhead = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-
-    HashMap values = new HashMap();
-    values.put(baseField, baseValue);
+    HashMap<ByteArrayWrapper, ByteArrayWrapper> values = new HashMap<>();
+    values.put(new ByteArrayWrapper(baseField.getBytes()),
+        new ByteArrayWrapper(baseValue.getBytes()));
     jedis1.hset(HASH_KEY, baseField, baseValue);
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
       jedis1.hset(HASH_KEY, baseField + i, baseValue + i);
-      values.put(baseField + i, baseValue + i);
+      values.put(new ByteArrayWrapper((baseField + i).getBytes()),
+          new ByteArrayWrapper((baseValue + i).getBytes()));
     }
 
     Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    Long expected = ros.sizeof(values) + regionOverhead;
+    int expected = ros.sizeof(values);
     Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
 
     assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void should_getAccurateSize_whenUsingRedisSetConstructor() {
+    final String KEY = "key1";
+    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
+
+    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
+        members1.stream().map(a -> new ByteArrayWrapper(a.getBytes()))
+            .collect(Collectors.toSet()));
+
+    jedis1.sadd(KEY, members1.toArray(new String[] {}));
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    int expected = ros.sizeof(localHashSetCopy);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void should_notCountDuplicates_whenUsingRedisSetConstructor() {
+    final String KEY = "key1";
+    final String MEMBER_BASE_STRING = "member1-";
+
+    List<String> distinctMembers = makeMemberList(SET_SIZE, MEMBER_BASE_STRING);
+    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
+        distinctMembers.stream().distinct().map(a -> new ByteArrayWrapper(a.getBytes()))
+            .collect(Collectors.toSet()));
+
+    jedis1.sadd(KEY, distinctMembers.toArray(new String[] {}));
+    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE);
+
+    localHashSetCopy.add(new ByteArrayWrapper(MEMBER_BASE_STRING.getBytes()));
+    assertThat(localHashSetCopy.size()).isEqualTo(SET_SIZE + 1);
+
+    List<String> duplicateMembers = makeListOfDuplicates(SET_SIZE, MEMBER_BASE_STRING);
+    jedis1.sadd(KEY, duplicateMembers.toArray(new String[] {}));
+    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE + 1);
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    int expected = ros.sizeof(localHashSetCopy);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  private List<String> makeMemberList(int setSize, String baseString) {
+    List<String> members = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      members.add(baseString + i);
+    }
+    return members;
+  }
+
+  private List<String> makeListOfDuplicates(int setSize, String baseString) {
+    List<String> members = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      members.add(baseString);
+    }
+    return members;
   }
 }

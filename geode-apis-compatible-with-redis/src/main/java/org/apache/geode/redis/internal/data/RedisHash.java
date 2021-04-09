@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -50,8 +49,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -62,7 +59,7 @@ public class RedisHash extends AbstractRedisData {
   private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
-  private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 48;
+  private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
   private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
   private AtomicInteger hashSize = new AtomicInteger(PER_HASH_OVERHEAD);
 
@@ -74,9 +71,6 @@ public class RedisHash extends AbstractRedisData {
 
   private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
   private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE;
-
-  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
-  public static final Logger logger = LogService.getLogger();
 
   @VisibleForTesting
   public RedisHash(List<ByteArrayWrapper> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
@@ -114,7 +108,6 @@ public class RedisHash extends AbstractRedisData {
 
 
   private void expireHScanSnapshots() {
-
     this.hScanSnapShotCreationTimes.entrySet().forEach(entry -> {
       Long creationTime = entry.getValue();
       long millisecondsSinceCreation = currentTimeMillis() - creationTime;
@@ -154,7 +147,6 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    logger.info("starting toData");
     DataSerializer.writeHashMap(hash, out);
     DataSerializer.writeInteger(hashSize.get(), out);
   }
@@ -162,7 +154,6 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    logger.info("starting fromData");
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
     hashSize.set(DataSerializer.readInteger(in));
@@ -175,19 +166,12 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
-    logger.info("reflect, pre-put hash: " + ros.sizeof(hash));
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      logger.info("oldvalue null, got: "
-          + hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length())
-          + " field length: " + field.length() + "; value length: " + value.length());
-      logger.info("reflect, field: " + ros.sizeof(field) + " val: " + ros.sizeof(value));
+      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
     } else {
-      logger.info("oldvalue present, got: " + hashSize.addAndGet(value.length() - oldvalue.length())
-          + " oldValue length: " + oldvalue.length() + "; value length: " + value.length());
-      logger.info("present reflect, field: " + ros.sizeof(field) + " val: " + ros.sizeof(value));
+      hashSize.addAndGet(value.length() - oldvalue.length());
     }
-    logger.info("reflect, post-put hash: " + ros.sizeof(hash));
     return oldvalue;
   }
 
@@ -320,8 +304,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
-      int count,
-      int startCursor) {
+      int count, int startCursor) {
 
     List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
 
@@ -362,14 +345,12 @@ public class RedisHash extends AbstractRedisData {
     List<ByteArrayWrapper> resultList = new ArrayList<>();
 
     for (int index = startCursor; index < keysSnapShot.size(); index++) {
-
       if ((index - startCursor) == count) {
         break;
       }
 
       ByteArrayWrapper key = keysSnapShot.get(index);
       indexOfKeys++;
-
       ByteArrayWrapper value = hash.get(key);
       if (value == null) {
         continue;
@@ -545,11 +526,6 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    int size = hashSize.get();
-    logger.info("hash getSizeInBytes called:" + size);
-    int ros_size = ros.sizeof(hash);
-    logger.info("hash getSizeInBytes ros:" + ros_size);
-    logger.info("hash getSizeInBytes ratio:" + ((float) ros_size) / size);
-    return size;
+    return hashSize.get();
   }
 }

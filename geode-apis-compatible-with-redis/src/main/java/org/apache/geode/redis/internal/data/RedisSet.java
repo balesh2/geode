@@ -35,16 +35,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -57,15 +54,15 @@ public class RedisSet extends AbstractRedisData {
 
   private AtomicInteger setSize = new AtomicInteger(PER_SET_OVERHEAD);
 
-  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
-  public static final Logger logger = LogService.getLogger();
-
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
     if (members instanceof HashSet) {
       this.members = (HashSet<ByteArrayWrapper>) members;
     } else {
       this.members = new HashSet<>(members);
+    }
+    for (ByteArrayWrapper value : this.members) {
+      setSize.addAndGet(PER_MEMBER_OVERHEAD + value.length());
     }
   }
 
@@ -209,16 +206,16 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.writeHashSet(members, out);
-    InternalDataSerializer.writeInteger(setSize.get(), out);
+    DataSerializer.writeHashSet(members, out);
+    DataSerializer.writeInteger(setSize.get(), out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    members = InternalDataSerializer.readHashSet(in);
-    setSize.set(InternalDataSerializer.readInteger(in));
+    members = DataSerializer.readHashSet(in);
+    setSize.set(DataSerializer.readInteger(in));
   }
 
   @Override
@@ -227,18 +224,19 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    logger.info("setSize ros pre-add: " + ros.sizeof(members));
-    logger.info("setSize pre-add: " + setSize.get());
-    boolean retval = members.add(memberToAdd);
-    logger
-        .info("setSize post-add: " + setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length()));
-    logger.info("setSize ros: " + ros.sizeof(members));
-    return retval;
+    boolean actuallyAdded = members.add(memberToAdd);
+    if (actuallyAdded) {
+      setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length());
+    }
+    return actuallyAdded;
   }
 
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
-    setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
-    return members.remove(memberToRemove);
+    boolean actuallyRemoved = members.remove(memberToRemove);
+    if (actuallyRemoved) {
+      setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
+    }
+    return actuallyRemoved;
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
@@ -264,7 +262,6 @@ public class RedisSet extends AbstractRedisData {
    */
   long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
       RedisKey key) {
-
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
@@ -344,11 +341,6 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    int size = setSize.get();
-    logger.info("set getSizeInBytes called:" + size);
-    int ros_size = ros.sizeof(members);
-    logger.info("set getSizeInBytes ros:" + ros_size);
-    logger.info("set getSizeInBytes ratio:" + ((float) ros_size) / size);
-    return size;
+    return setSize.get();
   }
 }
