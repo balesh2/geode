@@ -18,12 +18,14 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +172,6 @@ public class RedisSortedSet extends AbstractRedisData {
       memberAdd(member, score);
     }
   }
-
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {

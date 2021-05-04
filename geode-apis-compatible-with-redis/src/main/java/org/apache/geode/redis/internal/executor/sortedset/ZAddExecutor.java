@@ -28,6 +28,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.commons.lang3.StringUtils;
 
 public class ZAddExecutor extends AbstractExecutor {
   private final ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
