@@ -17,9 +17,6 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 
 import static org.apache.geode.redis.internal.RedisCommandType.ZADD;
-
-import java.util.List;
-import static org.apache.geode.redis.internal.RedisCommandType.ZADD;
 import static org.apache.geode.redis.internal.RedisCommandType.ZSCORE;
 
 import java.util.List;
@@ -42,10 +39,7 @@ public class RedisSortedSetCommandsFunctionInvoker extends RedisCommandsFunction
   }
 
   @Override
-  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd) {
-    return invokeCommandFunction(key, ZADD, scoresAndMembersToAdd);
-  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZAddOptions options) {
+  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options) {
     return invokeCommandFunction(key, ZADD, scoresAndMembersToAdd, options);
   }
 

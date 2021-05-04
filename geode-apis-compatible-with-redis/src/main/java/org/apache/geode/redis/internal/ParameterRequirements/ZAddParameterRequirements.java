@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
@@ -85,14 +84,6 @@ public class ZAddParameterRequirements implements ParameterRequirements {
     if (nxFound && xxFound) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_INVALID_ZADD_OPTION_NX_XX));
-    }
-    if (gtFound && ltFound) {
-      throw new RedisParametersMismatchException(
-          String.format(ERROR_INVALID_ZADD_OPTION_GT_LT_NX));
-    }
-    if ((gtFound || ltFound) && nxFound) {
-      throw new RedisParametersMismatchException(
-          String.format(ERROR_INVALID_ZADD_OPTION_GT_LT_NX));
     }
 
     return optionsFoundCount;
