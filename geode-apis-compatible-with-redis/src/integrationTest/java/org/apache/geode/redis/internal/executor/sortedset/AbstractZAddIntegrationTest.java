@@ -232,4 +232,10 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
     return map;
   }
+
+  @Test
+  public void zaddDoesNotError_givenCorrectArguments() {
+    long added = jedis.zadd("ss_key", 2, "member01");
+    assertThat(added).isEqualTo(1L);
+  }
 }
