@@ -234,8 +234,10 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddDoesNotError_givenCorrectArguments() {
+  public void zaddStoresScores_givenCorrectArguments() {
     long added = jedis.zadd("ss_key", 2, "member01");
     assertThat(added).isEqualTo(1L);
+    double score = jedis.zscore("ss_key", "member01");
+    assertThat(score).isEqualTo(2L);
   }
 }
