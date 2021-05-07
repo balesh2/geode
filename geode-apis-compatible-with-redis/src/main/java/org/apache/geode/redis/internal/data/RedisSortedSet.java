@@ -32,6 +32,7 @@ import java.util.Objects;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -121,6 +122,30 @@ public class RedisSortedSet extends AbstractRedisData {
           InternalDataSerializer.readByteArray(in));
     }
     sizeInBytes = InternalDataSerializer.readPrimitiveInt(in);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RedisSortedSet)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RedisSortedSet redisSortedSet = (RedisSortedSet) o;
+    if (members.size() != redisSortedSet.members.size()) {
+      return false;
+    }
+
+    for (Map.Entry<byte[], byte[]> entry : members.entrySet()) {
+      if (!Arrays.equals(redisSortedSet.members.get(entry.getKey()), (entry.getValue()))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
