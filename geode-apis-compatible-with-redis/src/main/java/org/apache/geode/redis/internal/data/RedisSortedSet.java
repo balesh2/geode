@@ -78,8 +78,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   // for serialization
-  public RedisSortedSet() {
-  }
+  public RedisSortedSet() {}
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
