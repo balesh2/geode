@@ -29,8 +29,6 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddParameterRequirements implements ParameterRequirements {
-  private static final Logger logger = LogService.getLogger();
-
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     int numberOfArguments = command.getProcessedCommand().size();
@@ -59,8 +57,7 @@ public class ZAddParameterRequirements implements ParameterRequirements {
       ByteArrayWrapper subcommand = commandIterator.next();
       String subCommandString = subcommand.toString().toLowerCase();
       try {
-        double dubby = Double.valueOf(subCommandString);
-        System.out.println("Val is: " + dubby);
+        Double.valueOf(subCommandString);
         break;
       } catch (NumberFormatException nfe) {
         System.out.println("Got exception on: " + subCommandString);
