@@ -15,102 +15,106 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZAddExecutor extends AbstractExecutor {
-  private final ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
-
+public class ZAddExecutor extends SortedSetExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    zAddExecutorState.initialize();
-    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
-    List<byte[]> commandElements = command.getProcessedCommand();
-    Iterator<byte[]> commandIterator = commandElements.iterator();
+    RedisSortedSetCommands redisSortedSetCommands = createRedisSortedSetCommands(context);
 
-    skipCommandAndKey(commandIterator);
+    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    int optionsFoundCount = findAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
-    if (zAddExecutorState.exceptionMessage != null) {
-      return RedisResponse.error(zAddExecutorState.exceptionMessage);
-    }
+    List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
+    Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
+    boolean adding = false;
+    boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
+    int count = 0;
 
-    return RedisResponse
-        .integer(redisSortedSetCommands.zadd(command.getKey(),
-            new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
-            makeOptions(zAddExecutorState)));
-  }
-
-  private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
-    commandIterator.next();
-    commandIterator.next();
-  }
-
-  private int findAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
-      ZAddExecutorState executorState) {
-    boolean scoreFound = false;
-    int optionsFoundCount = 0;
-
-    while (commandIterator.hasNext() && !scoreFound) {
-      String subCommandString = Coder.bytesToString(commandIterator.next()).toLowerCase();
-      switch (subCommandString) {
-        case "nx":
-          executorState.nxFound = true;
-          optionsFoundCount++;
-          break;
-        case "xx":
-          executorState.xxFound = true;
-          optionsFoundCount++;
-          break;
-        default:
-          try {
-            Double.valueOf(subCommandString);
-          } catch (NumberFormatException nfe) {
-            executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
+    while (commandIterator.hasNext()) {
+      ByteArrayWrapper next = commandIterator.next();
+      if (count < 2) { // Skip past command, key
+        count++;
+        System.out.println("****************zaddexec counting:" + count);
+        continue;
+      } else {
+        String subCommandString = next.toString().toLowerCase();
+        try {
+          Double.valueOf(subCommandString);
+          System.out.println("******************zaddexec got a double");
+          adding = true;
+        } catch (NumberFormatException nfe) {
+          switch (subCommandString) {
+            case "ch":
+              break;
+            case "incr":
+              break;
+            case "nx":
+              System.out.println("YEAH WE GOT AN NX!!!!!");
+              nxFound = true;
+              break;
+            case "xx":
+              xxFound = true;
+              break;
+            case "gt":
+              gtFound = true;
+              break;
+            case "lt":
+              ltFound = true;
+              break;
+            default:
+              // TODO: Should never happen?
           }
-          scoreFound = true;
+        }
+      }
+      if (adding) {
+        System.out.println("*******************zaddexec adding");
+        byte[] score = next.toBytes();
+        scoresAndMembersToAdd.add(score);
+        if (commandIterator.hasNext()) {
+          ByteArrayWrapper member = commandIterator.next();
+          scoresAndMembersToAdd.add(member.toBytes());
+        } else {
+          // TODO: throw exception - should never happen
+        }
       }
     }
-    if ((command.getProcessedCommand().size() - optionsFoundCount - 2) % 2 != 0) {
-      executorState.exceptionMessage = ERROR_SYNTAX;
-    } else if (executorState.nxFound && executorState.xxFound) {
-      executorState.exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
+    long entriesAdded = 0;
+    try {
+      System.out.println("****************zaddexec calling zadd");
+      entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
+          makeOptions(nxFound, xxFound, gtFound, ltFound));
+    } catch (Exception e) {
+      System.out.println(e.getCause() + " : " + e.getMessage());
     }
-    return optionsFoundCount;
+    return RedisResponse.integer(entriesAdded);
   }
 
-  private ZAddOptions makeOptions(ZAddExecutorState executorState) {
-    ZAddOptions.Exists existsOption = ZAddOptions.Exists.NONE;
+  private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound, boolean ltFound) {
+    ZSetOptions.Exists existsOption = ZSetOptions.Exists.NONE;
+    ZSetOptions.Update updateOption = ZSetOptions.Update.NONE;
 
-    if (executorState.nxFound) {
-      existsOption = ZAddOptions.Exists.NX;
+    if (nxFound) {
+      existsOption = ZSetOptions.Exists.NX;
     }
-    if (executorState.xxFound) {
-      existsOption = ZAddOptions.Exists.XX;
+    if (xxFound) {
+      existsOption = ZSetOptions.Exists.XX;
     }
-    return new ZAddOptions(existsOption);
-  }
-
-  static class ZAddExecutorState {
-    public boolean nxFound;
-    public boolean xxFound;
-    public String exceptionMessage;
-
-    public void initialize() {
-      nxFound = false;
-      xxFound = false;
-      exceptionMessage = null;
+    if (gtFound) {
+      updateOption = ZSetOptions.Update.GT;
     }
+    if (ltFound) {
+      updateOption = ZSetOptions.Update.LT;
+    }
+    return new ZSetOptions(existsOption, updateOption);
   }
 }
