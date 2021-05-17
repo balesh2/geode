@@ -23,8 +23,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SCardExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     return RedisResponse.integer(redisSetCommands.scard(key));

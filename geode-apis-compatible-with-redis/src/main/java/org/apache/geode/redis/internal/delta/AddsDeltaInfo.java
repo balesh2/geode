@@ -16,20 +16,23 @@
 
 package org.apache.geode.redis.internal.delta;
 
+import static org.apache.geode.redis.internal.delta.DeltaType.ADDS;
+
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.DataSerializer;
 
 public class AddsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+  private final List<byte[]> deltas;
 
   public AddsDeltaInfo(int size) {
     this(new ArrayList<>(size));
   }
 
-  public AddsDeltaInfo(ArrayList<byte[]> deltas) {
+  public AddsDeltaInfo(List<byte[]> deltas) {
     this.deltas = deltas;
   }
 
@@ -38,11 +41,11 @@ public class AddsDeltaInfo implements DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.ADDS, out);
-    DataSerializer.writeArrayList(deltas, out);
+    DataSerializer.writeEnum(ADDS, out);
+    DataSerializer.writeArrayList((ArrayList<byte[]>) deltas, out);
   }
 
-  public ArrayList<byte[]> getAdds() {
+  public List<byte[]> getAdds() {
     return deltas;
   }
 }
