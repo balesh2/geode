@@ -18,10 +18,11 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
-import static org.apache.geode.redis.internal.data.RedisSet.INTERNAL_HASH_SET_STORAGE_OVERHEAD;
 import static org.apache.geode.redis.internal.data.RedisSet.PER_MEMBER_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSet.logBaseTwo;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -210,29 +211,25 @@ public class RedisSetTest {
   }
 
   @Test
-  @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
-  public void should_calculateSize_closeToROS_withVaryingMemberCounts() {
+  public void should_calculateSize_equalToROS_withVaryingMemberCounts() {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetOfSpecifiedSize(i);
 
       int expected = reflectionObjectSizer.sizeof(set);
-      Long actual = (long) set.getSizeInBytes();
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      int actual = set.getSizeInBytes();
 
-      assertThat(actual).isCloseTo(expected, offset);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
   @Test
-  @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
-  public void should_calculateSize_closeToROS_withVaryingMemberSize() {
+  public void should_calculateSize_equalToROS_withVaryingMemberSize() {
     for (int i = 0; i < 1_600; i++) {
       RedisSet set = createRedisSetWithMemberOfSpecifiedSize(i * 64);
       int expected = reflectionObjectSizer.sizeof(set);
-      Long actual = (long) set.getSizeInBytes();
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      int actual = set.getSizeInBytes();
 
-      assertThat(actual).isCloseTo(expected, offset);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
@@ -252,11 +249,7 @@ public class RedisSetTest {
 
     set.sadd(members, region, key);
 
-    int actual = set.getSizeInBytes();
-    int expected = BASE_REDIS_SET_OVERHEAD + INTERNAL_HASH_SET_STORAGE_OVERHEAD
-        + PER_MEMBER_OVERHEAD + valueString.length();
-
-    assertThat(actual).isEqualTo(expected);
+    assertThat(set.getSizeInBytes()).isEqualTo(reflectionObjectSizer.sizeof(set));
   }
 
   @Test
@@ -267,22 +260,18 @@ public class RedisSetTest {
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey("key".getBytes());
     String baseString = "value";
-    int currentDataSize = 0;
 
     for (int i = 0; i < 1_000; i++) {
       List<byte[]> members = new ArrayList<>();
       String valueString = baseString + i;
-      currentDataSize += valueString.length();
       final byte[] value = valueString.getBytes();
       members.add(value);
       set.sadd(members, region, key);
 
       long actual = set.getSizeInBytes();
-      long expected = BASE_REDIS_SET_OVERHEAD + INTERNAL_HASH_SET_STORAGE_OVERHEAD
-          + (PER_MEMBER_OVERHEAD * (i + 1)) + currentDataSize;
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      long expected = reflectionObjectSizer.sizeof(set);
 
-      assertThat(actual).isCloseTo(expected, offset);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
@@ -344,45 +333,89 @@ public class RedisSetTest {
   // added, and/or as the members get longer
   @Test
   public void baseOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> members = new HashSet<>();
-    int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet(members));
+    int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet(Collections.emptyList()));
 
     assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
   }
 
   @Test
-  public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> tempHashSet = new HashSet<>();
-    byte[] member1 = "ab".getBytes();
-    byte[] member2 = "bc".getBytes();
-    tempHashSet.add(member1);
-    int oneEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    tempHashSet.add(member2);
-    int twoEntriesHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    int perMemberOverhead = twoEntriesHashSetSize - oneEntryHashSetSize + 5;
-
-    assertThat(perMemberOverhead).isEqualTo(PER_MEMBER_OVERHEAD);
+  public void test() {
+    List<byte[]> initialMembers = new ArrayList<>();
+    Random random = new Random(0);
+    int length = 10;
+    int numOfInitialMembers = 25;
+    for (int i = 0; i < numOfInitialMembers; ++i) {
+      byte[] data = new byte[length];
+      random.nextBytes(data);
+      initialMembers.add(data);
+    }
+    RedisSet set = new RedisSet(initialMembers);
+    System.out.println(
+        "Adds, initial scard, size = " + set.scard() + "\t" + reflectionObjectSizer.sizeof(set));
+    doAdds(length, set, 100);
+    System.out.println(
+        "Removes, initial scard, size = " + set.scard() + "\t" + reflectionObjectSizer.sizeof(set));
+    doRemoves(length, set, 175);
+    System.out.println(
+        "Adds, initial scard, size = " + set.scard() + "\t" + reflectionObjectSizer.sizeof(set));
+    doAdds(length, set, 100);
   }
 
   @Test
-  public void internalHashsetStorageOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> tempHashSet = new HashSet<>();
-    int baseHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
+  public void testLogBaseTwo() {
+    int actual;
+    int calculated;
+    for (int i = 1; i < 65; ++i) {
+      actual = (int) (Math.log(i) / Math.log(2));
+      calculated = logBaseTwo(i);
+      assertThat(actual).isEqualTo(calculated);
+    }
+  }
 
-    byte[] baw1 = "a".getBytes();
-    byte[] baw2 = "b".getBytes();
+  @Test
+  public void testLogBaseTwo_ThrowsWhenArgumentIsLessThanOne() {
+    assertThatThrownBy(() -> logBaseTwo(0)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> logBaseTwo(-1)).isInstanceOf(IllegalArgumentException.class);
+  }
 
-    tempHashSet.add(baw1);
-    tempHashSet.add(baw2);
+  @Test
+  public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
+    RedisSet set = new RedisSet(Collections.emptyList());
 
-    int twoEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
+    // Used to compute the average per member overhead
+    double totalOverhead = 0;
+    final int totalMembers = 1000;
 
-    int internalHashsetStorageOverhead =
-        twoEntryHashSetSize - (2 * PER_MEMBER_OVERHEAD) - baseHashSetSize;
+    // Generate pseudo-random data, but use fixed seed so the test is deterministic
+    Random random = new Random(0);
 
-    assertThat(internalHashsetStorageOverhead).isEqualTo(INTERNAL_HASH_SET_STORAGE_OVERHEAD);
+    int addedMembers = 0;
+    // Add 1000 members and compute the per member overhead after each add
+    for (int i = 0; i < totalMembers; i++) {
+
+      byte[] data = new byte[random.nextInt(30)];
+      random.nextBytes(data);
+
+      // Attempt to add a random member, but only increment addedMembers if the set was actually
+      // updated. If the entry was already present, no overhead will be added
+      if (!set.membersAdd(data)) {
+        continue;
+      }
+
+      addedMembers++;
+
+      // Compute the measured size
+      int size = reflectionObjectSizer.sizeof(set);
+      final int dataSize = data.length;
+
+      // Compute per member overhead with this number of members
+      int overHeadPerMember = (size - BASE_REDIS_SET_OVERHEAD - dataSize) / addedMembers;
+      totalOverhead += overHeadPerMember;
+    }
+
+    // Assert that the average overhead matches the constant
+    long averageOverhead = Math.round(totalOverhead / addedMembers);
+    assertThat(PER_MEMBER_OVERHEAD).isEqualTo(averageOverhead);
   }
 
   /******* helper methods *******/
@@ -417,4 +450,63 @@ public class RedisSetTest {
     return sb.toString();
   }
 
+  void doAdds(int length, RedisSet set, int membersToAdd) {
+    Random random = new Random(0);
+    System.out.println("entries\tcalcOH\trszOH\trealOH\tcap\tmbmOH");
+    for (int i = 0; i <= membersToAdd; ++i) {
+      length = random.nextInt(20);
+      if (length < 2) {
+        length++;
+      }
+      int initialSize = reflectionObjectSizer.sizeof(set);
+      int initialCalculatedSize = set.getSizeInBytes();
+      // int batchSize = 1;
+      int batchSize = random.nextInt(4);
+      int memberOverhead = 0;
+      for (int j = 0; j < batchSize; ++j) {
+        // byte[] data = Coder.intToBytes(i);
+        byte[] data = new byte[length];
+        random.nextBytes(data);
+        set.membersAdd(data);
+        memberOverhead += 8 * (2 + (length - 1) / 8);
+      }
+      int actualOverhead = reflectionObjectSizer.sizeof(set) - initialSize;
+      int resizeOH = actualOverhead - memberOverhead;
+      int calculatedOH = set.getSizeInBytes() - initialCalculatedSize;
+      System.out.println(
+          set.scard() + "\t" + calculatedOH + "\t" + resizeOH + "\t" + actualOverhead + "\t"
+              + set.backingSetCapacity + "\t" + memberOverhead);
+      assertThat(calculatedOH).isEqualTo(actualOverhead);
+    }
+  }
+
+  void doRemoves(int length, RedisSet set, int membersToRemove) {
+    Random random = new Random(0);
+    System.out.println("entries\tcalcOH\trszOH\trealOH\tcap\tmbmOH");
+    for (int i = 0; i <= membersToRemove; ++i) {
+      length = random.nextInt(20);
+      if (length < 2) {
+        length++;
+      }
+      int initialSize = reflectionObjectSizer.sizeof(set);
+      int initialCalculatedSize = set.getSizeInBytes();
+      // int batchSize = 1;
+      int batchSize = random.nextInt(4);
+      int memberOverhead = 0;
+      for (int j = 0; j < batchSize; ++j) {
+        // byte[] data = Coder.intToBytes(i);
+        byte[] data = new byte[length];
+        random.nextBytes(data);
+        set.membersRemove(data);
+        memberOverhead -= 8 * (2 + (length - 1) / 8);
+      }
+      int actualOverhead = reflectionObjectSizer.sizeof(set) - initialSize;
+      int resizeOH = actualOverhead - memberOverhead;
+      int calculatedOH = set.getSizeInBytes() - initialCalculatedSize;
+      System.out.println(
+          set.scard() + "\t" + calculatedOH + "\t" + resizeOH + "\t" + actualOverhead + "\t"
+              + set.backingSetCapacity + "\t" + memberOverhead);
+      assertThat(calculatedOH).isEqualTo(actualOverhead);
+    }
+  }
 }

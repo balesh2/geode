@@ -58,24 +58,17 @@ public class RedisSet extends AbstractRedisData {
   // catch this change. an increase in overhead should be carefully considered.
   // Note: the per member overhead is known to not be constant. it changes as more members are
   // added, and/or as the members get longer
-  protected static final int BASE_REDIS_SET_OVERHEAD = 128;
-  protected static final int PER_MEMBER_OVERHEAD = 61;
-  protected static final int INTERNAL_HASH_SET_STORAGE_OVERHEAD = 86;
+  protected static final int BASE_REDIS_SET_OVERHEAD = 136;
+  protected static final int PER_MEMBER_OVERHEAD = 42;
 
   private int sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+  // The number of elements that the backing set can hold before needing to resize
+  public int backingSetCapacity = 1;
 
   RedisSet(Collection<byte[]> members) {
     this.members = new ObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
     for (byte[] member : members) {
       membersAdd(member);
-    }
-
-    if (members.size() > 0) {
-      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
-    }
-
-    for (byte[] value : this.members) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + value.length;
     }
   }
 
@@ -245,24 +238,24 @@ public class RedisSet extends AbstractRedisData {
     return REDIS_SET_ID;
   }
 
-  private synchronized boolean membersAdd(byte[] memberToAdd) {
+  synchronized boolean membersAdd(byte[] memberToAdd) {
     boolean isAdded = members.add(memberToAdd);
     if (isAdded) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
-      if (members.size() == 1) {
-        sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
-      }
+      int length = memberToAdd.length;
+      int memberOverhead = (length == 0) ? 0 : 8 * (3 + (length - 1) / 8);
+      int resizeOverhead = calculateSetResizeOverhead(true);
+      sizeInBytes += memberOverhead + resizeOverhead;
     }
     return isAdded;
   }
 
-  private boolean membersRemove(byte[] memberToRemove) {
+  boolean membersRemove(byte[] memberToRemove) {
     boolean isRemoved = members.remove(memberToRemove);
     if (isRemoved) {
-      sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length;
-      if (members.isEmpty()) {
-        sizeInBytes = BASE_REDIS_SET_OVERHEAD;
-      }
+      int length = memberToRemove.length;
+      int memberOverhead = length == 0 ? 0 : 8 * (3 + (length - 1) / 8);
+      int resizeOverhead = calculateSetResizeOverhead(false);
+      sizeInBytes -= memberOverhead + resizeOverhead;
     }
     return isRemoved;
   }
@@ -362,5 +355,42 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public int getSizeInBytes() {
     return sizeInBytes;
+  }
+
+  // Calculates the number of times a ObjectOpenCustomHashSet has been resized
+  int calculateSetResizeOverhead(boolean isAdd) {
+    int overhead = 0;
+    if (isAdd) {
+      // Need to resize up
+      if (backingSetCapacity < members.size()) {
+        if (members.size() <= 3 && backingSetCapacity == 1) {
+          backingSetCapacity = 3;
+        } else {
+          backingSetCapacity *= 2;
+        }
+        overhead = 1 << (2 + logBaseTwo(backingSetCapacity));
+      }
+    } else {
+      // Need to resize down. We never resize back down to below a capacity of 12
+      if (backingSetCapacity > 12 && backingSetCapacity / 4 == members.size() + 1) {
+        overhead = 1 << (2 + logBaseTwo(backingSetCapacity));
+        backingSetCapacity /= 2;
+      }
+    }
+    return overhead;
+  }
+
+  static int logBaseTwo(int x) {
+    if (x < 1) {
+      throw new IllegalArgumentException("Cannot take the logarithm of numbers less than 1");
+    }
+    if (x < 2) {
+      return 0;
+    }
+    int result = 0;
+    while ((x >>= 1) >= 1) {
+      result++;
+    }
+    return result;
   }
 }
