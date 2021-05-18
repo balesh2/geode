@@ -60,6 +60,7 @@ public class RedisSetTest {
         RedisSet.class);
   }
 
+  /************* serialization *************/
   @Test
   public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
     RedisSet set1 = createRedisSet(1, 2);
@@ -75,6 +76,7 @@ public class RedisSetTest {
         .isEqualTo(expirationTimestamp);
   }
 
+  /************* to data *************/
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
     assertThat(Modifier
@@ -83,10 +85,7 @@ public class RedisSetTest {
                 .isTrue();
   }
 
-  private RedisSet createRedisSet(int m1, int m2) {
-    return new RedisSet(Arrays.asList(new byte[] {(byte) m1}, new byte[] {(byte) m2}));
-  }
-
+  /************* equals *************/
   @Test
   public void equals_returnsFalse_givenDifferentExpirationTimes() {
     RedisSet set1 = createRedisSet(1, 2);
@@ -126,6 +125,7 @@ public class RedisSetTest {
     assertThat(set2).isEqualTo(set1);
   }
 
+  /************* deltas *************/
   @Test
   public void sadd_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
@@ -178,6 +178,21 @@ public class RedisSetTest {
     assertThat(set2).isNotEqualTo(set1);
     set2.fromDelta(in);
     assertThat(set2).isEqualTo(set1);
+  }
+
+  @Test
+  public void delta_shouldNotPersist_afterBeingApplied() throws IOException {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisSet set = createRedisSet(1, 2);
+    byte[] member = new byte[] {3};
+    ArrayList<byte[]> adds = new ArrayList<>();
+    adds.add(member);
+
+    set.sadd(adds, region, null);
+    assertThat(set.hasDelta()).isTrue();
+
+    set.toDelta(new HeapDataOutputStream(100));
+    assertThat(set.hasDelta()).isFalse();
   }
 
   /************* test size of bytes in use *************/
@@ -524,5 +539,9 @@ public class RedisSetTest {
 
       assertThat(calculatedOH).isEqualTo(actualOverhead);
     }
+  }
+
+  private RedisSet createRedisSet(int m1, int m2) {
+    return new RedisSet(Arrays.asList(new byte[] {(byte) m1}, new byte[] {(byte) m2}));
   }
 }
