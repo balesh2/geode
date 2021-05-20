@@ -2,13 +2,13 @@
 
 Note: This feature is experimental and is subject to change in future releases of Apache Geode.
 
-[Introduction](#introduction)  
-[How To Try It](#how-to-try-it)  
-[Building Apache Geode](#building-apache-geode)  
-[Starting a Geode Server with Geode APIs Compatible with Redis Enabled](#starting-a-server)  
-[Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
-[Shutting Down](#shutting-down)  
-[Redis Commands](#redis-commands)
+1. [Introduction](#introduction)  
+2. [How To Try It](#how-to-try-it)  
+    i. [Required Dependencies](#dependencies)  
+    ii. [Starting a Geode Server with Geode APIs Compatible with Redis Enabled](#starting-a-server)  
+    iii. [Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
+    iv. [Shutting Down](#shutting-down)  
+3. [Redis Commands](#redis-commands)
 
 ## <a name="introduction"></a>Introduction
 
@@ -20,8 +20,11 @@ Note: Not all Redis commands are supported. See [Supported Redis Commands](#supp
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-### <a name="building-apache-geode"></a>Building Apache Geode
-Install and configure Geode v1.14 or later. See detailed instructions for building from source [here](../BUILDING.md).
+### <a name="dependencies"></a>Required Dependencies
+Install Redis CLI v
+Install and configure Geode v1.14 or later. 
+
+If you want to build Geode from source, you can find instructions [here](../BUILDING.md).
 
 ### <a name="starting-a-server"></a>Starting a Geode Server with Geode APIs Compatible with Redis Enabled
 Use gfsh to start at least one server with a command of the form:
