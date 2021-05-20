@@ -70,6 +70,8 @@ For example:
    $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --compatible-with-redis-port=6380
    ```
 
+[Return to top](#top)
+
 ### <a name="shutting-down"></a>Shutting Down 
 To shut down the Geode instance you started, in the terminal with gfsh running type the following command:
 ```commandLine
@@ -89,7 +91,7 @@ not connected>
 
 [Return to top](#top)
 
-### <a name="supported-redis-commands"></a> Supported Redis Commands
+### <a name="redis-commands"></a> Supported Redis Commands
 
 The Geode APIs compatible with Redis implement a subset of the full Redis command set.
 
