@@ -27,7 +27,7 @@ optional password authentication.
 
 <img src="../images_svg/geode_apis_compatible_with_redis.svg" class="image" />
 
-## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
+## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> APIs compatible with Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
@@ -218,7 +218,7 @@ These commands are supported for Redis 5.
 Keys are expired in two ways, actively and passively:
 
 -   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated every second. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With passive expiration, keys are evaluated every 3 minutes. If they are due to expire, they are deleted. Passive expiration is accurate to the second.
 
 ## <a id="high-availability-model" class="no-quick-link"></a>High Availability Model
 
