@@ -227,6 +227,28 @@ public class RedisSortedSet extends AbstractRedisData {
     return members.get(member);
   }
 
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    byte[] score = members.get(member);
+
+    if (score == null) {
+      memberAdd(member, increment);
+      return increment;
+    }
+
+    byte[] newScore = Coder.doubleToBytes(Coder.bytesToDouble(score)
+        + Coder.bytesToDouble(increment));
+    memberAdd(member, newScore);
+
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
+    deltaInfo.add(member);
+    deltaInfo.add(score);
+
+    storeChanges(region, key, deltaInfo);
+
+    return newScore;
+  }
+
   @Override
   public RedisDataType getType() {
     return REDIS_SORTED_SET;

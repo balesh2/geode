@@ -284,6 +284,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+      case ZINCRBY: {
+        byte[] increment = (byte[]) args[1];
+        byte[] member = (byte[]) args[2];
+        return sortedSetCommands.zincrby(key, increment, member);
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
