@@ -46,10 +46,11 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    return RedisResponse
-        .integer(redisSortedSetCommands.zadd(command.getKey(),
-            new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
-            makeOptions(zAddExecutorState)));
+    long retVal = redisSortedSetCommands.zadd(command.getKey(),
+        new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+        makeOptions(zAddExecutorState));
+
+    return RedisResponse.integer(retVal);
   }
 
   private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
@@ -72,6 +73,17 @@ public class ZAddExecutor extends AbstractExecutor {
         case "xx":
           executorState.xxFound = true;
           optionsFoundCount++;
+          break;
+        case "inf":
+        case "+inf":
+        case "-inf":
+        case "infinity":
+        case "+infinity":
+        case "-infinity":
+        case "Infinity":
+        case "+Infinity":
+        case "-Infinity":
+          scoreFound = true;
           break;
         default:
           try {
