@@ -15,14 +15,15 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NAN_OR_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -37,14 +38,13 @@ public class ZIncrByExecutor extends AbstractExecutor {
     byte[] increment = commandIterator.next();
     byte[] member = commandIterator.next();
 
-    try {
-      Double.valueOf(Coder.bytesToString(increment).toLowerCase());
-    } catch (NumberFormatException nfe) {
-      return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
-    }
-
     byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
-    return RedisResponse.bigDecimal(Coder.bytesToBigDecimal(retVal));
+    if (Arrays.equals(retVal, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
+      return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
+    } else if (Arrays.equals(retVal, ERROR_NAN_OR_INFINITY.getBytes())) {
+      return RedisResponse.error(ERROR_NAN_OR_INFINITY);
+    }
+    return RedisResponse.floatDouble(retVal);
   }
 
   private void skipCommandAndKey(Iterator<byte[]> commandIterator) {

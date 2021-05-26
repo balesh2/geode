@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -62,6 +64,31 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
   }
 
   @Test
+  public void shouldError_givenNonFloatIncrement() {
+    String key = "key";
+    String member = "member";
+    String nonFloatIncrement = "q";
+    jedis.zadd(key, 1.0, member);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.ZINCRBY, key, nonFloatIncrement, member))
+            .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+  }
+
+  @Test
+  public void shouldSetScoreToInfinity_givenInfiniteIncrement() {
+    String key = "key";
+    String member1 = "member1";
+    String member2 = "member2";
+
+    jedis.zadd(key, 1.0, member1);
+    assertThat(jedis.zincrby(key, POSITIVE_INFINITY, member1)).isEqualTo(POSITIVE_INFINITY);
+
+    jedis.zadd(key, 1.0, member2);
+    assertThat(jedis.zincrby(key, NEGATIVE_INFINITY, member2)).isEqualTo(NEGATIVE_INFINITY);
+  }
+
+  @Test
   public void zIncrByCreatesNewKey_whenIncrementedKeyDoesNotExist() {
     final byte[] key = "key".getBytes();
     final byte[] member = "member".getBytes();
@@ -78,7 +105,41 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     final double increment = 1.5;
 
     jedis.zadd(key, increment, "something".getBytes());
+
     assertThat(jedis.zincrby(key, increment, member)).isEqualTo(increment);
     assertThat(jedis.zscore(key, member)).isEqualTo(increment);
+  }
+
+  @Test
+  public void shouldIncrementScore_givenKeyAndMemberExist() {
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), 2.7, 1.5);
+  }
+
+  @Test
+  public void shouldIncrementScore_givenNegativeIncrement() {
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), 2.7, -1.5);
+  }
+
+  @Test
+  public void shouldIncrementScoreToANegativeNumber_givenNegativeIncrementGreaterThanScore() {
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), 2.7, -5.6);
+  }
+
+  @Test
+  public void shouldIncrementScore_givenNegativeInitialScoreAndPositiveIncrement() {
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), -2.7, 1.7);
+  }
+
+  @Test
+  public void shouldIncrementScore_givenIncrementInExponentialForm() {
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), -2.7, 2e5);
+    testZIncrByIncrements("key".getBytes(), "member".getBytes(), 2e5, -2.7);
+  }
+
+  private void testZIncrByIncrements(final byte[] key, final byte[] member,
+      final double initialScore, final double increment) {
+    jedis.zadd(key, initialScore, member);
+    assertThat(jedis.zincrby(key, increment, member)).isEqualTo(initialScore + increment);
+    assertThat(jedis.zscore(key, member)).isEqualTo(initialScore + increment);
   }
 }
