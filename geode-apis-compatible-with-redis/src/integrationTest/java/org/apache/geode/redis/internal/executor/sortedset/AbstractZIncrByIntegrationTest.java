@@ -70,4 +70,15 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     assertThat(jedis.zincrby(key, increment, member)).isEqualTo(increment);
     assertThat(jedis.zscore(key, member)).isEqualTo(increment);
   }
+
+  @Test
+  public void zIncrByCreatesNewMember_whenIncrementedMemberDoesNotExist() {
+    final byte[] key = "key".getBytes();
+    final byte[] member = "member".getBytes();
+    final double increment = 1.5;
+
+    jedis.zadd(key, increment, "something".getBytes());
+    assertThat(jedis.zincrby(key, increment, member)).isEqualTo(increment);
+    assertThat(jedis.zscore(key, member)).isEqualTo(increment);
+  }
 }

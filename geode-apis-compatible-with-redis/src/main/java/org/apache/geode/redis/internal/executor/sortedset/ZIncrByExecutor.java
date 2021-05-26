@@ -20,12 +20,13 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZIncrByExecutor extends SortedSetExecutor {
+public class ZIncrByExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();

@@ -53,10 +53,11 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
-    List<byte[]> membersToAdd = new ArrayList<>();
-    membersToAdd.add(member);
+    List<byte[]> valuesToAdd = new ArrayList<>();
+    valuesToAdd.add(increment);
+    valuesToAdd.add(member);
 
-    RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
+    RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
     region.create(key, sortedSet);
 
     return increment;
