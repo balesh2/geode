@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NAN_OR_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
@@ -248,10 +247,6 @@ public class RedisSortedSet extends AbstractRedisData {
         incr = NEGATIVE_INFINITY;
         break;
       default:
-        if (stringIncr.equals("nan")) {
-          return ERROR_NAN_OR_INFINITY.getBytes();
-        }
-
         try {
           incr = Double.parseDouble(stringIncr);
         } catch (NumberFormatException nfe) {
