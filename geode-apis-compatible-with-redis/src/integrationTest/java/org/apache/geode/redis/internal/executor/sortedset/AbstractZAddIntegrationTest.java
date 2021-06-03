@@ -81,11 +81,12 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void zaddErrors_givenNonNumericScore() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
-            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "invalidDoubleValue",
+            "member"))
+                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1.0", "member01",
-            "purple flurp", "member02", "3.0", "member03"))
+            "invalidDoubleValue", "member02", "3.0", "member03"))
                 .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 

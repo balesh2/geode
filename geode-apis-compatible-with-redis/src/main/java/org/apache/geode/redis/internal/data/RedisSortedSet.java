@@ -16,9 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
 import java.io.DataInput;
@@ -70,7 +67,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      processIncrement(score);
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -194,8 +190,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int initialSize = getSortedSetSize();
 
     while (iterator.hasNext()) {
-      byte[] score =
-          Coder.doubleToBytes(processIncrement(iterator.next()));
+      byte[] score = iterator.next();
       byte[] member = iterator.next();
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -223,7 +218,7 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] byteScore = members.get(member);
-    double incr = processIncrement(increment);
+    double incr = Coder.bytesToDouble(increment);
 
     if (byteScore != null) {
       incr += Coder.bytesToDouble(byteScore);
@@ -301,30 +296,5 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
-  }
-
-  private double processIncrement(byte[] value) {
-    String stringValue = Coder.bytesToString(value).toLowerCase();
-    double processedDouble;
-    switch (stringValue) {
-      case "inf":
-      case "+inf":
-      case "infinity":
-      case "+infinity":
-        processedDouble = POSITIVE_INFINITY;
-        break;
-      case "-inf":
-      case "-infinity":
-        processedDouble = NEGATIVE_INFINITY;
-        break;
-      default:
-        try {
-          processedDouble = Double.parseDouble(stringValue);
-        } catch (NumberFormatException nfe) {
-          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-        }
-        break;
-    }
-    return processedDouble;
   }
 }

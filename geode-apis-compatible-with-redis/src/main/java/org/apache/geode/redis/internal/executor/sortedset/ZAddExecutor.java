@@ -47,11 +47,35 @@ public class ZAddExecutor extends AbstractExecutor {
     }
 
     long retVal = redisSortedSetCommands.zadd(command.getKey(),
-        new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+        getScoresAndMembersToAdd(commandElements, optionsFoundCount),
         makeOptions(zAddExecutorState));
 
     return RedisResponse.integer(retVal);
   }
+
+  private ArrayList<byte[]> getScoresAndMembersToAdd(List<byte[]> commandElements,
+      int optionsFoundCount) {
+    ArrayList<byte[]> list = new ArrayList<>();
+    for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2) {
+      list.add(checkInfinity(commandElements.get(i)));
+      list.add(commandElements.get(i + 1));
+    }
+    return list;
+  }
+
+  private byte[] checkInfinity(byte[] score) {
+    String stringScore = Coder.bytesToString(score).toLowerCase();
+    switch (stringScore) {
+      case "infinity":
+      case "+infinity":
+        return Coder.stringToBytes("inf");
+      case "-infinity":
+        return Coder.stringToBytes("-inf");
+      default:
+        return score;
+    }
+  }
+
 
   private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
     commandIterator.next();
@@ -80,9 +104,6 @@ public class ZAddExecutor extends AbstractExecutor {
         case "infinity":
         case "+infinity":
         case "-infinity":
-        case "Infinity":
-        case "+Infinity":
-        case "-Infinity":
           scoreFound = true;
           break;
         default:

@@ -15,6 +15,9 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
@@ -306,10 +309,10 @@ public class Coder {
 
   public static String doubleToString(double d) {
     if (d == Double.POSITIVE_INFINITY) {
-      return "Infinity";
+      return "inf";
     }
     if (d == Double.NEGATIVE_INFINITY) {
-      return "-Infinity";
+      return "-inf";
     }
 
     String stringValue = String.valueOf(d);
@@ -379,12 +382,18 @@ public class Coder {
    * @throws NumberFormatException if the double cannot be parsed
    */
   public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF)) {
-      return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF)) {
-      return Double.NEGATIVE_INFINITY;
-    } else {
-      return Double.parseDouble(d);
+    d = d.toLowerCase();
+    switch (d) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        return POSITIVE_INFINITY;
+      case "-inf":
+      case "-infinity":
+        return NEGATIVE_INFINITY;
+      default:
+        return Double.parseDouble(d);
     }
   }
 }
